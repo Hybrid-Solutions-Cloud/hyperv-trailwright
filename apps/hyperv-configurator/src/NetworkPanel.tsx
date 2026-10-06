@@ -1,0 +1,11 @@
+import type {Project} from './project'
+import {networkDesign} from './networkDesign'
+export function NetworkPanel({project}:{project:Project}){
+ const plan=networkDesign(project)
+ return <section className="panel" aria-label="Host networking review"><h2>Host networking review</h2><p>Link physical members, host interfaces and addresses to an explicit switch or intent owner. These are design checks; physical connectivity and native deployment qualification require separate evidence.</p>
+ {!plan.switches.length&&<p>Add host switches or ATC intent instances below, then link their physical adapters.</p>}
+ {!!plan.controls.qos.length&&<div className="table-scroll" tabIndex={0} role="region" aria-label="Host QoS budget"><table><caption>Host QoS budget</caption><thead><tr><th scope="col">Host</th><th scope="col">Traffic classes</th><th scope="col">ETS reservation (%)</th><th scope="col">Assigned priorities</th></tr></thead><tbody>{plan.controls.qos.map(q=><tr key={q.hostId}><th scope="row">{q.hostName}</th><td>{q.classCount}</td><td>{q.etsBandwidthPercent}</td><td>{q.priorityCount} / 8</td></tr>)}</tbody></table><p>Each host class reserves bandwidth once, even when several interfaces reference it. Native and physical QoS acceptance remains pending.</p></div>}
+ {!!plan.pools.length&&<div className="table-scroll" tabIndex={0} role="region" aria-label="Address pool capacity"><table><caption>Address pool capacity</caption><thead><tr><th scope="col">Network</th><th scope="col">Routing scope</th><th scope="col">Pool addresses</th><th scope="col">Unavailable</th><th scope="col">Remaining</th></tr></thead><tbody>{plan.pools.map(p=><tr key={p.id}><th scope="row">{p.name}</th><td>{p.routingScope||'Not specified'}</td><td>{p.totalAddresses??'Unknown'}</td><td>{p.unavailableAddresses??'Unknown'}</td><td>{p.remainingAddresses??'Unknown'}</td></tr>)}</tbody></table><p>Unavailable includes the union of declared assignments, exclusions and gateways. Undiscovered address use remains unknown.</p></div>}
+ {!!plan.findings.length&&<details><summary>{plan.findings.length} network decisions to resolve</summary><ul>{plan.findings.map((f,i)=><li key={i}>{f.severity==='error'?'Required':'Review'}: {f.message}</li>)}</ul><p>Open Review and exports to navigate directly to each affected field.</p></details>}
+ </section>
+}

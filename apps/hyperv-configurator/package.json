@@ -1,0 +1,37 @@
+{
+  "name": "hyperv-configurator",
+  "version": "0.35.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone Hyper-V platform, management plane and SDN deployment designer",
+  "scripts": {
+    "dev": "vite",
+    "check": "tsc --noEmit",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run src",
+    "test:browser": "playwright test"
+  },
+  "dependencies": {
+    "@configurators/output": "*",
+    "@configurators/ui": "*",
+    "js-sha256": "1.0.0",
+    "js-yaml": "^4.1.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "pizzip": "^3.1.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^6.0.5",
+    "typescript": "^5.6.3",
+    "vite": "^8.2.1",
+    "vitest": "^4.1.10"
+  }
+}

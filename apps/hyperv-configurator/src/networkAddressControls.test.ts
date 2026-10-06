@@ -1,0 +1,23 @@
+import {describe,it,expect} from 'vitest'
+import {mkdirSync,writeFileSync} from 'node:fs'
+import {networkFixture} from './testing/networkFixture'
+import {clusterFixture} from './testing/clusterFixture'
+import {vmmFixture} from './testing/vmmFixture'
+import {networkDesign} from './networkDesign'
+import {networkCandidateFindings} from './networkCandidate'
+import {collections,newRecord} from './catalog'
+import {environmentFiles} from './exports'
+import {parseProject,serializeProject} from './project'
+import {sanitizeProject} from './sanitize'
+import {removeNetworkControlsV23} from './testing/legacyNetworkControls'
+const codes=(p:ReturnType<typeof networkFixture>['project'])=>networkDesign(p).findings.map(f=>f.code)
+describe('network address declarations and candidate boundaries',()=>{
+ it('deduplicates host declarations and typed allocations while detecting other owners',()=>{const {project}=networkFixture();project.design.hosts[0].values.managementIp='192.0.2.11';expect(codes(project)).not.toContain('NETWORK_ADDRESS_COLLISION');expect(networkDesign(project).pools[0].unavailableAddresses).toBe(5);project.design.hosts[1].values.managementIp='192.0.2.11';expect(codes(project)).toContain('NETWORK_ADDRESS_COLLISION')})
+ it('retains duplicate typed allocations as errors even for the same owner',()=>{const {project,add}=networkFixture();add('addressAssignments','duplicate',project.design.addressAssignments[0].values);expect(codes(project)).toContain('NETWORK_ADDRESS_COLLISION')})
+ it('accounts for component, cluster and active SDN management addresses',()=>{const {project,add}=networkFixture();Object.assign(project.design.clusters[0].values,{address:'192.0.2.13',managementNetwork:'management-net'});add('managementNetworks','service-ip',{component:'example-service',network:'management-net',addressing:'static',ip:'192.0.2.14/24'});project.sdn.scope='new';add('sdnResources','sdn-ip',{providerNetwork:'management-net',managementIp:'192.0.2.18'});expect(networkDesign(project).pools[0].unavailableAddresses).toBe(8);project.sdn.scope='none';expect(networkDesign(project).pools[0].unavailableAddresses).toBe(7)})
+ it('distinguishes DHCP-only exclusions from unavailable reserved addresses',()=>{const {project,network,add}=networkFixture();network.values.poolMode='dhcp';expect(codes(project)).toContain('NETWORK_STATIC_DHCP_CONFLICT');add('addressAssignments','dhcp-exclusion',{network:network.id,kind:'exclusion',exclusionPurpose:'dhcp',start:'192.0.2.11',end:'192.0.2.12'});expect(codes(project)).not.toContain('NETWORK_STATIC_DHCP_CONFLICT');expect(codes(project)).not.toContain('NETWORK_ADDRESS_COLLISION');project.design.addressAssignments[project.design.addressAssignments.length-1].values.exclusionPurpose='reserved';expect(codes(project)).toContain('NETWORK_ADDRESS_COLLISION')})
+ it('recognizes a host address backed by a typed DHCP reservation',()=>{const {project,network}=networkFixture();network.values.poolMode='dhcp';project.design.hosts[0].values.managementIp='192.0.2.11';for(const row of project.design.addressAssignments.filter(a=>a.values.kind==='static'))Object.assign(row.values,{kind:'reservation',clientId:'EXAMPLE client'});expect(codes(project)).not.toContain('NETWORK_STATIC_DHCP_CONFLICT');expect(codes(project)).not.toContain('NETWORK_ADDRESS_COLLISION')})
+ it('gates malformed selected host addresses but isolates unrelated networks',()=>{const {project}=networkFixture();project.design.hosts[0].values.managementIp='192.0.2.999';expect(networkCandidateFindings(project,new Set(['host-net-1'])).map(f=>f.code)).toContain('NETWORK_EXISTING_ADDRESS_FORMAT');expect(networkCandidateFindings(project,new Set(['unrelated-host']))).toEqual([])})
+ it('migrates schema22 without inventing QoS, native IDs or DHCP semantics',()=>{const {project}=networkFixture(),old:any=JSON.parse(serializeProject(project));removeNetworkControlsV23(old);old.schemaVersion=22;const migrated=parseProject(JSON.stringify(old));expect(migrated.schemaVersion).toBe(32);expect(migrated.design.networkTrafficClasses).toEqual([]);expect(migrated.design.addressAssignments[2].values.exclusionPurpose).toBe('');expect(codes(migrated)).not.toContain('NETWORK_ADDRESS_COLLISION');old.design.networkTrafficClasses=[];expect(()=>parseProject(JSON.stringify(old))).toThrow('Schema 22')})
+ it('removes private native IDs and review prose from shareable projects',()=>{const {project}=networkFixture();Object.assign(project.design.hostSwitches[0].values,{vmmLogicalSwitchId:'11111111-1111-1111-1111-111111111111',vmmSwitchReview:'PRIVATE network review'});const shared=serializeProject(sanitizeProject(project));expect(shared).not.toContain('11111111-1111-1111-1111-111111111111');expect(shared).not.toContain('PRIVATE')})
+})

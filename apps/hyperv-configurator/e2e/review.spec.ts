@@ -1,0 +1,30 @@
+import { test, expect } from '@playwright/test'
+import { storageFixture } from '../src/testing/storageFixture'
+
+test('review links open collapsed records and focus the exact invalid field',async({page},info)=>{
+  page.on('dialog',d=>d.accept());await page.goto('./')
+  const {project,fixed,thin}=storageFixture();project.owner='';thin.values.owner='';fixed.values.sizeGiB=0
+  await page.locator('input[type=file]').first().setInputFiles({name:'review.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(project))})
+  await page.getByRole('button',{name:/Review and exports/}).click()
+  await expect(page.getByRole('table',{name:'Design input progress'})).toBeVisible()
+  await page.getByRole('button',{name:'Assign a design owner.',exact:true}).click()
+  await expect(page.getByLabel('Design owner',{exact:true})).toBeFocused()
+  await page.getByLabel('Design owner',{exact:true}).fill('Example owner')
+  await page.getByRole('button',{name:/Review and exports/}).click()
+  const finding=page.getByRole('button',{name:'Thin CSV: Owner is required.',exact:true})
+  await finding.focus();await page.keyboard.press('Enter')
+  const thinRecord=page.locator('details.resource').filter({has:page.locator('summary').filter({hasText:'Thin CSV'})})
+  await expect(thinRecord).toHaveAttribute('open','')
+  await expect(thinRecord.getByLabel('Owner',{exact:false})).toBeFocused()
+  await thinRecord.getByLabel('Owner',{exact:false}).fill('Example storage owner')
+  await page.getByRole('button',{name:/Review and exports/}).click()
+  await expect(page.getByRole('button',{name:'Thin CSV: Owner is required.',exact:true})).toHaveCount(0)
+  await page.getByRole('button',{name:'Fixed CSV: enter a positive logical volume size.',exact:true}).click()
+  const fixedRecord=page.locator('details.resource').filter({has:page.locator('summary').filter({hasText:'Fixed CSV'})})
+  await expect(fixedRecord.getByLabel('Logical size (GiB)',{exact:true})).toBeFocused()
+  await fixedRecord.getByLabel('Logical size (GiB)',{exact:true}).fill('2048')
+  await page.setViewportSize({width:390,height:844})
+  await page.getByRole('button',{name:/Review and exports/}).click()
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true)
+  await page.screenshot({path:info.outputPath('review-mobile.png'),fullPage:true})
+})

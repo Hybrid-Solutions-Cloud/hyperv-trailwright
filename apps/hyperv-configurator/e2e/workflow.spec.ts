@@ -1,0 +1,42 @@
+import {test,expect} from '@playwright/test'
+import {readFile} from 'node:fs/promises'
+import PizZip from 'pizzip'
+import {newProject} from '../src/project'
+
+test('scope navigation preserves project context and follows management-boundary findings',async({page},info)=>{
+  page.on('dialog',d=>d.accept());const project=newProject();project.name='Scope example';project.owner='Design team';project.scope='management'
+  await page.goto('./');await page.locator('input[type=file]').first().setInputFiles({name:'scope.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(project))})
+  await expect(page.getByText('Opened Scope example.')).toBeVisible()
+  const nav=page.getByRole('navigation',{name:'Design sections'})
+  await expect(nav.getByRole('button',{name:/Hosts and provisioning/})).toHaveCount(0)
+  await page.getByLabel('Customer / business context',{exact:true}).fill('Example customer')
+  await page.getByLabel('Scenario / engagement identifier',{exact:true}).fill('SCOPE-17')
+  await page.getByLabel('Show all 14 sections',{exact:true}).check()
+  await expect(nav.getByRole('button')).toHaveCount(14)
+  await page.getByLabel('Show all 14 sections',{exact:true}).uncheck()
+  await page.getByRole('button',{name:'Cluster only',exact:true}).click()
+  await expect(nav.getByRole('button',{name:/Hosting and availability/})).toHaveCount(0)
+  await nav.getByRole('button',{name:/Review and exports/}).click()
+  await page.getByRole('button',{name:'Choose how this cluster obtains management services.',exact:true}).click()
+  await expect(page.getByLabel('Management service source *',{exact:true})).toBeFocused()
+  await page.getByLabel('Management service source *',{exact:true}).selectOption('external')
+  await page.getByLabel('Management service / decision owner *',{exact:true}).fill('Existing platform team')
+  await page.getByLabel('Management boundary, dependencies and acceptance *',{exact:true}).fill('Existing external fabric capacity and connectivity reviewed.')
+  await page.getByRole('button',{name:'Continue',exact:true}).click()
+  await expect(page.getByRole('heading',{name:'Sites and clusters',exact:true})).toBeFocused()
+  const savedEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Download project',exact:true}).click()
+  const saved=await readFile((await(await savedEvent).path())!,'utf8')
+  expect(JSON.parse(saved)).toMatchObject({schemaVersion:32,scope:'cluster',context:{customer:'Example customer',scenarioId:'SCOPE-17',managementSource:'external'}})
+  await page.locator('input[type=file]').first().setInputFiles({name:'reopen.json',mimeType:'application/json',buffer:Buffer.from(saved)})
+  await nav.getByRole('button',{name:/Management requirements/}).click()
+  await expect(page.getByLabel('Management service source *',{exact:true})).toHaveValue('external')
+  await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true)
+  await page.screenshot({path:info.outputPath('scope-mobile.png'),fullPage:true})
+  await nav.getByRole('button',{name:/Review and exports/}).click()
+  const zipEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Download design package (.zip)',exact:true}).click()
+  const file=await zipEvent;await file.saveAs(info.outputPath('scope-design.zip'))
+  const zip=new PizZip(await readFile((await file.path())!))
+  expect(zip.file('environment/scenario.yml')!.asText()).toContain('managementSource: external')
+  expect(zip.file('reports/design.md')!.asText()).toContain('SCOPE-17')
+  expect(JSON.parse(zip.file('project.json')!.asText()).context).toEqual(JSON.parse(saved).context)
+})
