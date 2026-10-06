@@ -203,14 +203,14 @@ export default function App() {
 
   return <div className="shell">
     <aside className="sidebar">
-      <a className="brand" href="./"><span className="brand-icon">HV</span><span>Hyper-V<strong>Configurator</strong></span></a>
+      <a className="brand" href="./"><span className="brand-icon">HV</span><span>Hyper-V<strong>Trailwright</strong></span></a>
       <p className="sidebar-caption">From platform decisions to a deployment design.</p>
       <nav aria-label="Design sections">{path.map((s, index) => <button key={s.key} aria-current={section === s.key ? 'step' : undefined} className={section === s.key ? 'active' : ''} onClick={() => navigate(s.key)}><span>{String(index + 1).padStart(2, '0')}</span>{s.title}{findings.some(f => f.section === s.key && f.severity === 'error') && <i aria-label="Has unresolved items">•</i>}</button>)}</nav>
       <label className="field check"><span>Show all 14 sections</span><input type="checkbox" checked={showAllSections} onChange={event=>setShowAllSections(event.target.checked)}/></label>
-      <div className="sidebar-bottom"><a href="../hyperv-configurator.html">Configurator documentation ↗</a><a href="../hyperv-surveyor/">Open Hyper-V Surveyor ↗</a><a href="../">All configuration tools ↗</a><small>Version {metadata.version} · Development</small></div>
+      <div className="sidebar-bottom"><a href="https://github.com/Hybrid-Solutions-Cloud/hyperv-trailwright#readme">Configurator documentation ↗</a><a href="../hyperv-surveyor/">Open Hyper-V Surveyor ↗</a><a href="../">All Labs tools ↗</a><small>Version {metadata.version} · Development</small></div>
     </aside>
     <main>
-      <Breadcrumb items={[{ label: 'Configurators', href: '../' }, { label: 'Hyper-V Configurator' }]} />
+      <Breadcrumb items={[{ label: 'Labs', href: '../' }, { label: 'Hyper-V Trailwright' }]} />
       <div className="project-bar"><div><strong>{project.name || 'Untitled Hyper-V design'}</strong><span>Revision {project.revision} · {storageEnabled && !storageError ? 'Autosave enabled' : 'Download to keep your draft'}</span></div>
         <div className="actions"><button className="secondary" disabled={busy} onClick={() => fileInput.current?.click()}>Open project</button><button disabled={busy} onClick={() => act(save)}>Download project</button></div>
         <input ref={fileInput} type="file" accept=".json,application/json" hidden onChange={e => { const file = e.target.files?.[0]; e.target.value = ''; void act(() => open(file)) }} />
@@ -292,7 +292,7 @@ export default function App() {
           <section className="panel"><h2>Validation findings</h2>{findings.length === 0 ? <p>No design findings.</p> : <ul className="findings">{findings.map((f, index) => <li key={`${f.code}-${index}`}><span className={`badge ${f.severity}`}>{f.severity}</span><button className="text-button" onClick={() => openFinding(f)}>{f.message}</button></li>)}</ul>}</section>
         </>}
         <div className="step-footer"><button className="secondary" disabled={position===0} onClick={() => navigate(path[position-1].key)}>Previous</button><span>{position+1} of {path.length}</span><button onClick={() => section === 'review' ? void act(save) : navigate(path[position+1].key)}>{section === 'review' ? 'Save project' : 'Continue'}</button></div>
-        <footer>Hyper-V Configurator · Browser-based design · No inventory upload · v{metadata.version}</footer>
+        <footer>Hyper-V Trailwright · Browser-based design · No inventory upload · v{metadata.version}</footer>
       </div>
     </main>
   </div>

@@ -8,3 +8,10 @@ Run npm install, then npm run dev. Use npm test and npm run build to validate th
 
 The original application documentation is in apps/hyperv-configurator/README.md.
 
+
+## Published application
+
+https://labs.hybridsolutions.cloud/hyperv-trailwright/
+
+Pushes to main run tests, build the React application, and deploy it to GitHub Pages.
+
