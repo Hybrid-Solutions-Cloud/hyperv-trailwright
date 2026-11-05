@@ -22,12 +22,7 @@ The website should offer three independent actions: save a draft, export a desig
 | --- | --- | --- |
 | Hyper-V Surveyor management advisor | Requirement-led questions, Classic/VMM/WAC/Arc choices, monitoring selection and rationale | A recommendation is not an installation contract |
 | Surveyor deployment and cost engines | Managed-host/VM/cluster scale, VMM and SCOM HA, SQL placement, management capacity, commercial assumptions | External hosting is currently broad; detailed provider and physical-server contracts need expansion |
-| ProductLabs Deployment Designer | Eleven-step workflow, conditional fields, provenance, deterministic compilation and validation | Existing source proof is not certification of every runtime path |
-| ProductLabs scenario templates and SDR management contracts | Separate hardware, networking, identity, product, VM and lifecycle data; VMware Cloud Director existing-VM example | Private environment values must never become public examples or defaults |
-| Hyper-V Toolkit | Staged foundation, SQL, WAC, SCOM, VMM, fabric, bare-metal and cluster tasks | Several paths are lab-specific or incomplete; the existing VMM physical-computer profile must be created beforehand |
 | Microsoft product documentation | Version-specific support, HA and bare-metal prerequisites, licensing rules | Recheck when catalog versions or commercial programs change |
-
-Two concrete integration gaps matter. ProductLabs' prototype compiler emits a normalized `management_plane` model, while the toolkit generator reads older `hyperv_management_plane` and `track1` shapes. The generator also has legacy path defaults. Matching filenames is insufficient: we need a tested field adapter to a pinned toolkit version.
 
 ## 2. What the website looks like
 
@@ -122,7 +117,7 @@ OME appears alongside VMM, SCOM, SQL and WAC in component selection and the mana
 
 The resource consumes management capacity and appears in topology, inventory, licensing, environment YAML and design reports even though deployment is manual. Export a manual task and an expected appliance endpoint, not a Windows installer or a generic empty VM described as a completed OME appliance. Existing OME remains preserved.
 
-Current toolkit evidence is limited to an HTTPS reachability wait and operator note; the check ignores connection errors. It cannot certify appliance installation or operational readiness. Qualify any future read-only OME validation separately.
+No automated check can certify appliance installation or operational readiness. Qualify any future read-only OME validation separately.
 
 ## 5. Hosting and availability — per component
 
@@ -223,7 +218,7 @@ Standalone local storage, clustered SAN, S2D, supported SMB storage and mixed st
 
 The handoff should generate a per-node worksheet and machine-readable physical profile/target definitions. An OEM Redfish virtual-media install is a different adapter from VMM's BMC/PXE process.
 
-Repository evidence: the toolkit's fabric role checks for a pre-existing physical-computer profile and throws if it is absent. Its bare-metal task starts asynchronous VMM jobs. Before advertising complete automation, add/qualify profile creation or explicit import, job tracking, failure cleanup and post-deployment acceptance.
+VMM bare metal needs a physical-computer profile and starts asynchronous VMM jobs. Before advertising complete automation, add/qualify profile creation or explicit import, job tracking, failure cleanup and post-deployment acceptance.
 
 ## 8. Storage, networking, identity and operations
 
@@ -241,7 +236,7 @@ Repository evidence: the toolkit's fabric role checks for a pre-existing physica
 | Security | Roles, privileged access, runner identity, certificate trust, WinRM/SSH policy, hardening, Defender and secret references |
 | Operations | SCOM packs/discovery/retention, alerts, patch rings, Cluster-Aware Updating ownership, backup scope, RTO/RPO, restore tests and capacity thresholds |
 
-The current toolkit Track 1 rejects Network ATC intents. A broader future ATC option must choose a different validated adapter; it cannot silently reuse that track.
+A Network ATC option needs its own validated automation adapter.
 
 ### SDN design and setup
 
@@ -275,7 +270,7 @@ Windows Server 2025 supports Network Controller as a Failover Clustering service
 
 The SDN path adds its actual resource demand to management/infrastructure sizing without double counting workload VMs. Non-overlap rules apply to shared underlay/VIP pools; overlapping isolated tenant address spaces must be evaluated in their tenant/routing scope rather than rejected globally. Validate address capacity, feature prerequisites, HA/failure domains, control-plane reachability, certificates and topology support. Stretched/multi-site requests require an explicitly supported SDN design, not an automatic extension of the ordinary cluster branch.
 
-No SDN deployment implementation was found in the toolkit scripts/roles reviewed for this outline. Full SDN collection and setup handoff are in scope; automated setup needs a new qualified adapter and runtime evidence. Selecting SDN must not silently claim the existing Track 1 workflow installs it.
+Full SDN collection and setup handoff are in scope; automated setup needs a qualified adapter and runtime evidence. Selecting SDN must not imply that any existing automation installs it.
 
 ### Product-specific configuration records
 
@@ -375,7 +370,7 @@ hyperv-design/
     results.json
 ```
 
-The ProductLabs repository adapter maps the generic environment model into its existing `config/scenarios/<scenario-id>/...` ownership structure. Other environment repositories get their own mappings. Only supported, selected adapters appear in an automation-ready package; drafts may export a design report clearly marked incomplete.
+Each environment repository gets its own adapter that maps the generic environment model into that repository's structure. Only supported, selected adapters appear in an automation-ready package; drafts may export a design report clearly marked incomplete.
 
 ## 11. Execution flow and validation
 
@@ -405,7 +400,7 @@ Primary user stories: an infrastructure architect needs a complete design and BO
 
 The first release does not perform unqualified infrastructure execution, certify licensing compliance, or make every provider/engine combination automatically deployable. These require validated consumer contracts and their own acceptance evidence. No delivery date was provided; phase sequencing is proposed rather than a calendar commitment.
 
-P0: complete questionnaire, import/save, per-component hosting/lifecycle/HA, cluster handoff choices, licensing worksheet, validation, canonical JSON/YAML and design reports. First automation adapter: reconcile the ProductLabs scenario contract with a pinned Hyper-V Toolkit version. Include VMM bare-metal collection and a usable operator handoff even where execution remains manual.
+P0: complete questionnaire, import/save, per-component hosting/lifecycle/HA, cluster handoff choices, licensing worksheet, validation, canonical JSON/YAML and design reports. First automation adapter: map the canonical model to a pinned version of the chosen automation toolkit. Include VMM bare-metal collection and a usable operator handoff even where execution remains manual.
 
 P0 also includes Dell OME appliance design/manual handoff and the full optional SDN questionnaire, component sizing, topology and setup exports. OME installation stays manual. SDN automated execution is qualified separately from design completeness.
 
@@ -440,13 +435,6 @@ Local evidence reviewed:
 - [Surveyor management questions](D:/git/hybrid-solutions-cloud/hyperv-surveyor/Reference/management-decision-questions.fact-checked.json)
 - [Surveyor management deployment model](D:/git/hybrid-solutions-cloud/hyperv-surveyor/src/engine/managementDeployment.ts)
 - [Surveyor licensing/cost model](D:/git/hybrid-solutions-cloud/hyperv-surveyor/src/engine/managementCost.ts)
-- [ProductLabs questionnaire](D:/git/tierpoint/prodtech/hybrid-cloud/environments/tierpointproductlabs/pmo/deployment-designer/requirements-and-questionnaire.md)
-- [ProductLabs compiler](D:/git/tierpoint/prodtech/hybrid-cloud/environments/tierpointproductlabs/apps/deployment-designer/shared/src/compiler.ts)
-- [Scenario boundary](D:/git/tierpoint/prodtech/hybrid-cloud/environments/tierpointproductlabs/docs/decisions/scenario-configuration-boundary.md)
-- [Toolkit stages](D:/git/tierpoint/prodtech/hybrid-cloud/toolkits/hyperv-toolkit/STAGES.md)
-- [Toolkit inventory generator](D:/git/tierpoint/prodtech/hybrid-cloud/toolkits/hyperv-toolkit/scripts/tools/Generate-AnsibleFromProductLabsConfig.ps1)
-- [VMM physical profile gate](D:/git/tierpoint/prodtech/hybrid-cloud/toolkits/hyperv-toolkit/src/ansible/roles/scvmm_fabric/tasks/main.yml)
-- [VMM bare-metal task](D:/git/tierpoint/prodtech/hybrid-cloud/toolkits/hyperv-toolkit/src/ansible/roles/scvmm_bmd/tasks/main.yml)
 
 Vendor references checked on 2026-09-10:
 - [Dell OME host requirements](https://www.dell.com/support/manuals/en-us/dell-openmanage-enterprise/ome_p_4_7_online_help_user_guide/host-system-requirements?guid=guid-54cbd632-cf9e-40b1-8420-085d49196e10&lang=en-us)

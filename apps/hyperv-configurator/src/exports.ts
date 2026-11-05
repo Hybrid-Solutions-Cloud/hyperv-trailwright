@@ -1,4 +1,4 @@
-import {csvCell,sha256Hex} from '@configurators/output'
+import {csvCell,sha256Hex} from '@trailwright/output'
 import {quorumConfiguration} from './quorumConfiguration'
 import { dump } from 'js-yaml'
 import PizZip from 'pizzip'
@@ -538,7 +538,7 @@ export function environmentFiles(project: Project): Record<string, string> {
     'licensing/README.md': licensingGuide,
     'environment/operations.yml': yaml(group(['operations', 'operationsTargets','recoveryTests','capacityAlerts','securityPolicies','stages'])),
     'plans/operations.json':JSON.stringify(operationsPlan(project),null,2),
-    'sdn/sdn-evidence.md':sdnEvidenceGuide.replace('(plans/implementation.md)','(https://gitlab.com/tierpoint/prodtech/hybrid-cloud/toolkits/configurators/-/blob/main/apps/hyperv-configurator/docs/plans/implementation.md)'),
+    'sdn/sdn-evidence.md':sdnEvidenceGuide.replace('(plans/implementation.md)','(https://github.com/Hybrid-Solutions-Cloud/hyperv-trailwright/blob/main/apps/hyperv-configurator/docs/plans/implementation.md)'),
     'sdn/acceptance-request.json':JSON.stringify(sdnAcceptanceRequest(project),null,2),
     'sdn/result-template.json':JSON.stringify(sdnEvidenceTemplate(project),null,2),
     'reports/sdn-evidence.json':JSON.stringify(sdnEvidenceAssessment(project),null,2),
@@ -550,7 +550,7 @@ export function environmentFiles(project: Project): Record<string, string> {
     'reports/sdn-services.md':sdnServicesMarkdown(project),
     'reports/sdn-design.md':sdnMarkdown(project),
     'sdn/README.md':sdnGuide,
-    'sdn/sdn-services.md':sdnServicesGuide.replace('(sdn-design.md)','(README.md)').replace('(plans/implementation.md)','(https://gitlab.com/tierpoint/prodtech/hybrid-cloud/toolkits/configurators/-/blob/main/apps/hyperv-configurator/docs/plans/implementation.md)'),
+    'sdn/sdn-services.md':sdnServicesGuide.replace('(sdn-design.md)','(README.md)').replace('(plans/implementation.md)','(https://github.com/Hybrid-Solutions-Cloud/hyperv-trailwright/blob/main/apps/hyperv-configurator/docs/plans/implementation.md)'),
     'reports/operations.md':operationsMarkdown(project),
     'plans/stage-plan.json': JSON.stringify(stagePlan(project), null, 2),
     'discovery/snapshots.json': JSON.stringify(project.discovery, null, 2),

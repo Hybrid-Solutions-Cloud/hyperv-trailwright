@@ -1,6 +1,6 @@
 # Hyper-V Trailwright
 
-Copied from the Configurators workspace. The application is in apps/hyperv-configurator; required shared packages are in packages/ui and packages/output.
+The application is in apps/hyperv-configurator; required shared packages are in packages/ui and packages/output.
 
 ## Local development
 

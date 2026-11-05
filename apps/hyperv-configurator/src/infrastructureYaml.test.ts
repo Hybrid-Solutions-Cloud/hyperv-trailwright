@@ -12,7 +12,7 @@ const add=(p:Project,key:string,values:Answers)=>{const row=newRecord(collection
 function fullDesign(){
   const p=demoProject(1),host=p.design.hosts[0],cluster=p.design.clusters[0]
   Object.assign(p.decisions,{
-    firewallProvider:'tierpoint-fortigate',fwModel:'FortiGate-90G',fwHaMode:'active-passive',fwFirmware:'7.4.4',fwVdoms:'root; customer',
+    firewallProvider:'managed-fortigate',fwModel:'FortiGate-90G',fwHaMode:'active-passive',fwFirmware:'7.4.4',fwVdoms:'root; customer',
     siteToSiteVpn:'yes',vpnOnPremPublicIp:'203.0.113.10',vpnGatewaySku:'VpnGw2AZ',vpnActiveActive:'yes',vpnGatewaySubnet:'10.10.0.0/27',vpnIpsecPolicy:'custom',vpnCustomPolicy:'EXAMPLE policy',vpnSharedKeyRef:'keyvault://example/psk',vpnBgp:'yes',vpnOnPremAsn:65010,vpnAzureAsn:65515,vpnOnPremBgpPeerIp:'169.254.21.1',
     pointToSiteVpn:'yes',p2sAddressPool:'172.16.200.0/24',p2sTunnelType:'openvpn',p2sAuthentication:'entra',p2sEntraTenant:'https://login.example.test/tenant',
     expressRoute:'yes',erProvider:'Example carrier',erCircuitName:'er-example',erPeeringLocation:'Example metro',erBandwidthMbps:1000,erSku:'standard',erPrimarySubnet:'192.168.100.0/30',erSecondarySubnet:'192.168.100.4/30',erVlanId:200,erPeerAsn:65020,
@@ -39,7 +39,7 @@ describe('master infrastructure.yml',()=>{
     expect(Object.keys(infra)).toEqual(['_metadata','decisions','networking','compute','operations'])
     expect(infra._metadata).toMatchObject({schema_version:'4.0.0',generator:'hyperv-configurator',project_schema_version:32,deployment_state:'not_executed_by_configurator'})
     expect(Object.keys(infra.decisions)).toEqual(['management_plane','firewall','site_to_site_vpn','point_to_site_vpn','expressroute','tor_switches','out_of_band_management','storage','sdn','cluster_witness','backup','monitoring'])
-    expect(infra.decisions.firewall).toEqual({answer:'tierpoint-fortigate',used:true})
+    expect(infra.decisions.firewall).toEqual({answer:'managed-fortigate',used:true})
     expect(infra.decisions.monitoring).toEqual({answer:'no',used:false})
     const devices=infra.networking.onprem.network_devices
     for(const device of devices)for(const key of ['device_type','device_role','device_hostname','device_management_ip'])expect(device,device.device_hostname).toHaveProperty(key)

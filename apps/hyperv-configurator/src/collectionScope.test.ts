@@ -45,7 +45,7 @@ describe('collection disclosure', () => {
     for (const key of networkDeviceKeys) expect(applies(key), key).toBe(false)
     project.decisions.firewallProvider = 'customer'
     expect(applies('firewallDevices')).toBe(false)
-    project.decisions.firewallProvider = 'tierpoint-fortigate'; project.decisions.torProvider = 'customer'; project.decisions.oobModel = 'oob-switch'
+    project.decisions.firewallProvider = 'managed-fortigate'; project.decisions.torProvider = 'customer'; project.decisions.oobModel = 'oob-switch'
     for (const key of ['firewallDevices', 'firewallInterfaces', 'firewallGateways', 'torSwitches', 'oobDevices']) expect(applies(key), key).toBe(true)
     expect(applies('consolePorts')).toBe(false)
     project.decisions.oobModel = 'opengear'

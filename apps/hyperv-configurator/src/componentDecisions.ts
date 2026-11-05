@@ -8,7 +8,7 @@ const answer=(project:Project,key:DecisionGate)=>String(project.decisions?.[key]
 /** Whether a component is in use. An unanswered gate is not in use for exports; its questions stay visible until answered. */
 export function componentUsed(project:Project,component:'fortigate'|'customerFirewall'|'firewall'|'s2sVpn'|'p2sVpn'|'expressRoute'|'tor'|'oob'|'opengear'|'backup'|'monitoring'):boolean{
   switch(component){
-    case 'fortigate':return answer(project,'firewallProvider')==='tierpoint-fortigate'
+    case 'fortigate':return answer(project,'firewallProvider')==='managed-fortigate'
     case 'customerFirewall':return answer(project,'firewallProvider')==='customer'
     case 'firewall':return FIREWALL.includes(answer(project,'firewallProvider'))
     case 's2sVpn':return answer(project,'siteToSiteVpn')==='yes'

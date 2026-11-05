@@ -3,7 +3,7 @@
 Version: 0.34.0
 Project schema: 31
 
-The Hyper-V Configurator is an independent React/Vite browser application in the Configurators npm workspace. It owns its project schema, field catalog, validation, calculations and reports. Hyper-V Surveyor is an optional file-import source. No Surveyor, ProductLabs or deployment-tool runtime is required.
+The Hyper-V Configurator is an independent React/Vite browser application in the Hyper-V Trailwright npm workspace. It owns its project schema, field catalog, validation, calculations and reports. Hyper-V Surveyor is an optional file-import source. No Surveyor or deployment-tool runtime is required.
 
 ## Product boundary
 
@@ -47,4 +47,4 @@ Normal exports retain the complete design. Shareable exports sanitize private na
 
 Vitest covers schema migrations, strict parsing, configuration rules, calculations, deterministic exports and all eight reference scenarios. Playwright covers scoped workflows, validation navigation, save/open, imports, configuration editing, mobile layouts and downloaded ZIP integrity. Configuration-boundary tests reject executable files and `adapters/` or `execution/` directories in generated packages.
 
-GitLab CI runs secret detection, unit tests, browser tests and the repository build. Pages publication depends on those checks. The generated `version.json` records the application version and CI commit SHA for exact live verification. Existing Pages access controls remain unchanged.
+GitHub Actions runs the unit tests and the repository build. GitHub Pages publication depends on those checks. The generated `version.json` records the application version and commit SHA for exact live verification.

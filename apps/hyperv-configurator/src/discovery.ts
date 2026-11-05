@@ -1,4 +1,4 @@
-import { sha256Hex } from '@configurators/output'
+import { sha256Hex } from '@trailwright/output'
 import { serializeProject, type Project } from './project'
 import { validateSnapshot, observationIdentity, type DiscoverySnapshot, type DriftReview, type ObservedValue, type Observation } from './discoveryContract'
 

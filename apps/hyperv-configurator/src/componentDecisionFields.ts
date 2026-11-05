@@ -3,7 +3,7 @@ import type {Field,Collection,Answers} from './catalog'
  * Schema 31 component decisions. Every infrastructure component starts with an "is it used?" (or which-option)
  * gate. The gate reveals only the follow-up questions that apply; a "not used" answer hides them, keeps the saved
  * answers in the project, and removes the component from infrastructure.yml and environment exports.
- * Platform capability comes from Microsoft Learn and vendor documentation; TierPoint documents only inform
+ * Platform capability comes from Microsoft Learn and vendor documentation; reference design documents only inform
  * defaults, naming and help text.
  */
 const text=(key:string,label:string,hint?:string):Field=>({key,label,type:'text',...(hint?{hint}:{})})
@@ -18,7 +18,7 @@ const both=(f:Field,gate:[string,string[]],detail:[string,string[]]):Field=>({..
 const used={yes:'Used in this design',no:'Not used in this design'}
 const priorities=Object.fromEntries(Array.from({length:8},(_,i)=>[String(i),i===3?'3 (SMB Direct default)':i===7?'7 (cluster heartbeat default)':String(i)]))
 
-export const FORTIGATE=['tierpoint-fortigate'],FIREWALL=['tierpoint-fortigate','customer'],TOR=['dell-powerswitch','customer'],OOB=['oob-switch','opengear'],YES=['yes']
+export const FORTIGATE=['managed-fortigate'],FIREWALL=['managed-fortigate','customer'],TOR=['dell-powerswitch','customer'],OOB=['oob-switch','opengear'],YES=['yes']
 
 /** Gate questions, in the order they are asked. */
 export const decisionGates={
@@ -28,7 +28,7 @@ export const decisionGates={
 export type DecisionGate=keyof typeof decisionGates
 
 export const networkDecisionFields:Field[]=[
-  required(choice('firewallProvider','Firewall in this design',{'tierpoint-fortigate':'Yes — TierPoint-managed Fortinet FortiGate','customer':'Yes — customer-owned firewall',none:'No firewall in this design'})),
+  required(choice('firewallProvider','Firewall in this design',{'managed-fortigate':'Yes — managed Fortinet FortiGate','customer':'Yes — customer-owned firewall',none:'No firewall in this design'})),
   on(text('fwModel','FortiGate model'),'firewallProvider',...FORTIGATE),
   on(choice('fwHaMode','Firewall high-availability mode',{'active-passive':'Active-passive HA pair','active-active':'Active-active HA pair',standalone:'Standalone unit (no HA)'}),'firewallProvider',...FORTIGATE),
   on(text('fwFirmware','FortiOS version'),'firewallProvider',...FORTIGATE),
@@ -78,7 +78,7 @@ export const networkDecisionFields:Field[]=[
   on(num('erPeerAsn','Private peering customer ASN',0,4294967295),'expressRoute',...YES),
   on(text('erMd5Ref','Private peering MD5 key reference'),'expressRoute',...YES),
 
-  required(choice('torProvider','Top-of-rack switches',{'dell-powerswitch':'Dell PowerSwitch (TierPoint-supplied)',customer:'Customer-owned switches',none:'No top-of-rack switches in scope'})),
+  required(choice('torProvider','Top-of-rack switches',{'dell-powerswitch':'Dell PowerSwitch (provider-supplied)',customer:'Customer-owned switches',none:'No top-of-rack switches in scope'})),
   on(required(text('torVendor','Customer switch vendor')),'torProvider','customer'),
   on(text('torOwner','Customer switch owner and contact'),'torProvider','customer'),
   on(text('torModel','ToR switch model'),'torProvider',...TOR),
@@ -117,7 +117,7 @@ export const operationsDecisionFields:Field[]=[
   on(ref('backupNetwork','Dedicated backup network','networks'),'backupInScope',...YES),
   on(text('backupServiceOwner','Backup service owner'),'backupInScope',...YES),
   required(choice('monitoringInScope','Monitoring in this design',used)),
-  on(choice('monitoringPlatform','Monitoring platform',{scom:'System Center Operations Manager','azure-monitor':'Azure Monitor','tierpoint-noc':'TierPoint NOC tooling',customer:'Customer monitoring tool',other:'Other'}),'monitoringInScope',...YES),
+  on(choice('monitoringPlatform','Monitoring platform',{scom:'System Center Operations Manager','azure-monitor':'Azure Monitor','provider-noc':'Provider NOC tooling',customer:'Customer monitoring tool',other:'Other'}),'monitoringInScope',...YES),
   both(text('monitoringWorkspace','Log Analytics workspace'),['monitoringInScope',YES],['monitoringPlatform',['azure-monitor']]),
   on(text('monitoringServiceOwner','Monitoring service owner'),'monitoringInScope',...YES),
   on(text('networkDeviceLogging','Syslog / SNMP destination for network devices'),'monitoringInScope',...YES),
@@ -128,7 +128,7 @@ export const decisionSecretKeys=['vpnSharedKeyRef','p2sRadiusSecretRef','erMd5Re
 const identity=(label:string)=>[required(text('name',label)),text('owner','Owner')]
 const role=choice('role','Device role',{primary:'Primary',secondary:'Secondary',standalone:'Standalone'})
 export const networkDeviceCollections:Collection[]=[
-  {key:'firewallDevices',title:'Firewall units',singular:'firewall unit',section:'network',description:'One record per FortiGate unit. An HA pair is two records, primary and secondary. Shown only when the design uses TierPoint-managed firewalls.',fields:[
+  {key:'firewallDevices',title:'Firewall units',singular:'firewall unit',section:'network',description:'One record per FortiGate unit. An HA pair is two records, primary and secondary. Shown only when the design uses managed FortiGate firewalls.',fields:[
     ...identity('Firewall hostname'),required(role),required(text('managementIp','Management IP address')),text('serial','Serial number'),text('wanIp','WAN / public IP address'),num('haPriority','HA priority',0,255),text('rack','Rack position'),notes('notes','Firewall notes'),
   ]},
   {key:'firewallInterfaces',title:'Firewall interfaces',singular:'firewall interface',section:'network',description:'One record per firewall port: WAN, HA sync, OOB or a link to a top-of-rack switch port.',fields:[

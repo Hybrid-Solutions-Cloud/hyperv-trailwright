@@ -1,11 +1,5 @@
 import { defineConfig } from '@playwright/test'
 
-const publishedUrl = process.env.E2E_BASE_URL
-const pagesToken = process.env.E2E_PAGES_TOKEN
-if (pagesToken && (!publishedUrl || new URL(publishedUrl).origin !== 'https://tierpoint.gitlab.io')) {
-  throw new Error('Pages verification credentials are restricted to the TierPoint GitLab Pages origin.')
-}
-
 export default defineConfig({
   testDir: './e2e',
   timeout: 60000,
@@ -18,8 +12,7 @@ export default defineConfig({
     browserName: 'chromium',
     channel: process.platform === 'win32' ? 'chrome' : undefined,
     acceptDownloads: true,
-    extraHTTPHeaders: pagesToken ? { Authorization: `Bearer ${pagesToken}` } : undefined,
-    trace: pagesToken ? 'off' : 'retain-on-failure',
+    trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
   webServer: process.env.E2E_BASE_URL ? undefined : {

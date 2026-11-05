@@ -43,9 +43,9 @@ describe('SectionIntro', () => {
 
 describe('Breadcrumb', () => {
   it('links every level except the current page', () => {
-    const html = renderToStaticMarkup(createElement(Breadcrumb, { items: [{ label: 'Configurators', href: '../' }, { label: 'Hyper-V Configurator' }] }))
+    const html = renderToStaticMarkup(createElement(Breadcrumb, { items: [{ label: 'Labs', href: '../' }, { label: 'Hyper-V Configurator' }] }))
     expect(html).toContain('aria-label="Breadcrumb"')
-    expect(html).toContain('<a href="../">Configurators</a>')
+    expect(html).toContain('<a href="../">Labs</a>')
     expect(html).toContain('<span aria-current="page">Hyper-V Configurator</span>')
     expect(html).not.toContain('href="undefined"')
   })

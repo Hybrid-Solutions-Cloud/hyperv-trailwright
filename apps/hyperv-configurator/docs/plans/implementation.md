@@ -3,7 +3,6 @@
 Updated: 2026-09-11
 Target release: 0.33.0
 Project schema: 30
-Tracking: [GitLab issue #1](https://gitlab.com/tierpoint/prodtech/hybrid-cloud/toolkits/configurators/-/work_items/1)
 
 Configuration traceability: [current capability map](traceability.md)
 
@@ -11,12 +10,12 @@ Configuration traceability: [current capability map](traceability.md)
 
 Deliver and publish the standalone Hyper-V Configurator as a configuration designer. The user already owns deployment automation. This application must not create, bundle, qualify or execute infrastructure automation. Azure Local is assigned to another AI and is outside this plan.
 
-Completion requires the configuration-only source to be committed, all required GitLab checks and Pages publication to pass for the exact commit, and the live application and downloaded package to be independently verified.
+Completion requires the configuration-only source to be committed, all required CI checks and Pages publication to pass for the exact commit, and the live application and downloaded package to be independently verified.
 
 ## Product boundary
 
 - [x] Remove PowerShell deployment and inventory scripts, executable adapter plans, execution requests/runners and their tests.
-- [x] Remove consumer and collector jobs from GitLab CI while retaining unit, browser, build, secret and Pages gates.
+- [x] Remove consumer and collector jobs from CI while retaining unit, browser, build, secret and Pages gates.
 - [x] Remove adapter qualification from configuration readiness and validation.
 - [x] Preserve external tool, owner and stage references as optional configuration data.
 - [x] Keep OME installation manual and never infer infrastructure execution from an export or observation.
@@ -72,11 +71,9 @@ Completion requires the configuration-only source to be committed, all required 
 - [x] Set application version 0.33.0 and repository version 0.36.0; update lockfile and changelog.
 - [x] Reconcile README, architecture, user guides and this checklist with the configuration-only scope.
 - [x] Review the final diff for secrets, private environment data, unintended changes and existing-user regressions.
-- [x] Commit with GitLab issue #1, push the feature branch and verify its exact-SHA pipeline.
-- [x] Merge through the existing GitLab workflow and verify the main-branch Pages pipeline.
-- [x] Verify the live restricted Pages application reports version 0.33.0 and the exact deployed commit.
+- [x] Verify the live Pages application reports version 0.33.0 and the exact deployed commit.
 - [x] Run critical live configuration journeys and independently inspect actual live ZIP contents and hashes.
-- [x] Record final commit, pipeline, URL, verification evidence, limitations and rollback reference in the handoff and issue.
+- [x] Record final commit, URL, verification evidence, limitations and rollback reference in the handoff.
 
 ## Verified pre-release evidence
 
@@ -87,11 +84,3 @@ Completion requires the configuration-only source to be committed, all required 
 - Shareable sanitization remains covered across project, discovery, topology, management, host, storage, networking, SDN, operations and licensing tests. No credential-like added text or generated artifact entered the worktree.
 - No local production build or infrastructure action was run.
 
-## Published release evidence
-
-- Release content merged through MR !4 as `8ee6103fd4d9ab7e89866059c990664eb5105753`.
-- Exact-source branch pipeline 2842409491 passed all seven jobs. Main publication pipeline 2842414724 passed secret detection, workspace tests, ARM/Terraform/Ansible contracts, both application browser suites and Pages job 16459207355.
-- Restricted Pages URL: `https://tierpoint.gitlab.io/prodtech/hybrid-cloud/toolkits/configurators/hyperv-configurator/`. The catalog entry, application version 0.33.0 and deployed commit matched the release content.
-- All eight live reference designs passed save, reopen, mobile-overflow and package-download checks with zero browser errors. All eight live packages passed required-content, schema-30, configuration-purpose, forbidden-executable, exact-size and SHA-256 checks.
-- No infrastructure deployment was attempted or required. Runtime deployment qualification remains external to this configuration designer.
-- Rollback reference: `fdb7ebf4bd099b35e5565674b9c6740c3f56f2a0` (the immediately preceding published `main`).

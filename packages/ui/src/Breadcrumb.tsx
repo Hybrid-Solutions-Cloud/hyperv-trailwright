@@ -11,7 +11,7 @@ export interface BreadcrumbProps {
   items: Crumb[]
 }
 
-/** The same trail on the catalog, the documentation pages and every tool: Configurators › Tool › Page. */
+/** The same trail on the catalog, the documentation pages and every tool: Labs › Tool › Page. */
 export function Breadcrumb({ items }: BreadcrumbProps) {
   return (
     <nav className="cfg-breadcrumb" aria-label="Breadcrumb">

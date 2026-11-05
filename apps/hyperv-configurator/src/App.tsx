@@ -39,7 +39,7 @@ import {OmittedComponentsPanel} from './OmittedComponentsPanel'
 import {ManagementAdvisorPanel} from './ManagementAdvisorPanel'
 import { collectionApplies } from './collectionScope'
 import { activeDecisionFields } from './componentDecisions'
-import { Breadcrumb, FieldHelp } from '@configurators/ui'
+import { Breadcrumb, FieldHelp } from '@trailwright/ui'
 import { hintFor } from './fieldHints'
 
 type Section = typeof sections[number]['key']

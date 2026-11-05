@@ -8,7 +8,7 @@
 
 ## 0.34.0 — component decisions and master infrastructure.yml
 
-- Start every infrastructure component with an "is it used?" decision: TierPoint-managed FortiGate or customer firewall, Azure site-to-site VPN, point-to-site VPN, ExpressRoute, top-of-rack switches (Dell PowerSwitch or customer), out-of-band management (standard OOB switch or Opengear with Lighthouse), backup and monitoring. A used answer reveals only its follow-up questions; a not-used answer hides them, keeps earlier answers and removes the component from exports.
+- Start every infrastructure component with an "is it used?" decision: managed FortiGate or customer firewall, Azure site-to-site VPN, point-to-site VPN, ExpressRoute, top-of-rack switches (Dell PowerSwitch or customer), out-of-band management (standard OOB switch or Opengear with Lighthouse), backup and monitoring. A used answer reveals only its follow-up questions; a not-used answer hides them, keeps earlier answers and removes the component from exports.
 - Collect firewall units, interfaces to ToR ports, VLAN gateways and DHCP scopes; ToR switches with VLT/MLAG pairing and, when S2D storage is switched, storage VLANs, PFC priorities, ETS percentages and RDMA type; OOB devices, Lighthouse enrollment by keyvault:// reference, cellular failover and the console port map.
 - Add port maps: host adapter to ToR switch port, BMC to OOB device port, firewall port to ToR port and console port to device.
 - Record S2D switched or switchless connectivity with the Windows Server full-mesh rule, and Fibre Channel fabrics A/B, zoning and target WWPNs or iSCSI path A/B networks, VLANs, portals and target IQN.

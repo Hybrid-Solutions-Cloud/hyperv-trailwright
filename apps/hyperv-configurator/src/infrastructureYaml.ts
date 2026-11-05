@@ -9,7 +9,7 @@ import {activeStorageLinks,allActiveDecisionFields,componentUsed,decisionRecord,
  * never produces scripts or templates.
  *
  * Shape: Azure Local Toolkit infrastructure.schema.json v4.0.0 and master-registry.yaml v4.0.0
- * (azl-toolkit/configs/variables/assets, pinned in apps/azurelocal-configurator/src/contracts/toolkit).
+ * (the same contract Azure Local Trailwright follows).
  * INFRASTRUCTURE_REGISTRY_KEYS lists the registry keys used as-is; INFRASTRUCTURE_EXTENSIONS lists every key the
  * registry does not define. infrastructureYaml.test.ts walks the generated file and fails on any key that is in
  * neither the registry nor the extension list, so the two lists cannot drift from the generator.

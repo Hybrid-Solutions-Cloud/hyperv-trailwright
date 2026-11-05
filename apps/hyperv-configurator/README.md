@@ -49,11 +49,11 @@ Quorum configuration collects file-share, cloud and disk witness settings, place
 Prepared-host cluster designs retain node, domain, management-network and desired cluster configuration. The configurator exports these settings without cluster-creation scripts.
 Status: Development preview; full implementation goal remains active.
 
-This is the standalone Hyper-V Configurator tool in the Configurators workspace. It is a separate website tool alongside Hyper-V Surveyor, Azure Local Surveyor and POC Configurator. It is not a section of Surveyor or an extension of the ProductLabs designer.
+This is the standalone Hyper-V Configurator tool. It is a separate website tool alongside Hyper-V Surveyor and is not a section of Surveyor.
 
 The implementation covers management-plane design, component placement and HA, cluster provisioning and VMM bare-metal collection, storage/network/identity, licensing, Dell OME appliance design and manual handoff, optional SDN design/setup, and reports and configuration exports.
 
-Surveyor and the supplied Toolkit/environment repositories provide research material and interoperability examples. The Configurator owns its project model and workflow. Generating files does not deploy infrastructure; OME appliance installation remains manual.
+Hyper-V Surveyor provides research material and interoperability examples. The Configurator owns its project model and workflow. Generating files does not deploy infrastructure; OME appliance installation remains manual.
 
 - [Implementation tasks](docs/plans/implementation.md)
 - [Design proposal](docs/plans/hyperv-configurator-design/outline.md)
@@ -63,7 +63,7 @@ Surveyor and the supplied Toolkit/environment repositories provide research mate
 - [VMM bare-metal configuration handoff](docs/vmm-bare-metal.md)
 - [Discovery, provenance and drift review](docs/discovery-and-drift.md)
 
-The parent repository uses npm workspaces and GitLab CI/Pages. Publication must use that repository's delivery path, with a green pipeline for the final commit and the published tool verified. Earlier goal wording referring to the external Surveyor repository and GitHub Pages is superseded by the user's explicit repository location.
+The repository uses npm workspaces. GitHub Actions runs the unit tests, builds the website and publishes it to GitHub Pages on every push to `main`.
 
 ## Test the designer
 
@@ -82,9 +82,7 @@ npm run test --workspace apps/hyperv-configurator
 npm run test:browser --workspace apps/hyperv-configurator
 ```
 
-Browser tests use installed Chrome on Windows. CI installs Chromium. Set `E2E_BASE_URL` to test an already served deployment; otherwise Playwright starts and stops a local Vite server. GitLab CI builds and publishes the website.
-
-For the restricted TierPoint Pages site, authorized verification may supply `E2E_PAGES_TOKEN` through the process environment. It is accepted only with the TierPoint Pages origin; traces are disabled for these authenticated runs. Never place a token in a project, source file or test artifact.
+Browser tests use installed Chrome on Windows. CI installs Chromium. Set `E2E_BASE_URL` to test an already served deployment; otherwise Playwright starts and stops a local Vite server. GitHub Actions builds and publishes the website.
 
 ## Implemented design capabilities
 

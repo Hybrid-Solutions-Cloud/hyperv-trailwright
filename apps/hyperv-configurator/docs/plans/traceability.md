@@ -20,6 +20,6 @@ The original 0.2 design proposal included deployment automation. The user confir
 | Observation import and drift review | discovery contract, import and review modules | discovery unit tests and browser journeys |
 | Reports, schedules, diagrams and package integrity | `src/exports.ts`, `src/topology.ts`, `src/designSchedules.ts` | export/topology tests and actual browser downloads |
 | Configuration-only boundary | removal of `consumers/`; no adapter or execution export paths | `src/configurationPackage.test.ts`, `e2e/configuration.spec.ts`, source/package extension audit |
-| Publication identity | Vite version artifact and GitLab CI/Pages | exact-SHA pipeline and live `version.json` verification |
+| Publication identity | Vite version artifact and GitHub Actions/Pages | exact-SHA workflow run and live `version.json` verification |
 
 The [completion plan](implementation.md) is the authoritative checklist. The [original proposal](hyperv-configurator-design/outline.md) remains historical source material and carries an explicit scope-correction notice. No proposal text can restore automation work without a new user instruction.

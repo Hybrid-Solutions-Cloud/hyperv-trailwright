@@ -13,8 +13,8 @@
     "test:browser": "playwright test"
   },
   "dependencies": {
-    "@configurators/output": "*",
-    "@configurators/ui": "*",
+    "@trailwright/output": "*",
+    "@trailwright/ui": "*",
     "js-sha256": "1.0.0",
     "js-yaml": "^4.1.0",
     "jspdf": "^4.2.1",

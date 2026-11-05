@@ -32,7 +32,7 @@ describe('component decision gates',()=>{
   })
 
   const gates:[string,string,string,string,string[]][]=[
-    ['firewallProvider','tierpoint-fortigate','none','fwModel',['firewallDevices','firewallInterfaces','firewallGateways']],
+    ['firewallProvider','managed-fortigate','none','fwModel',['firewallDevices','firewallInterfaces','firewallGateways']],
     ['siteToSiteVpn','yes','no','vpnOnPremPublicIp',[]],
     ['pointToSiteVpn','yes','no','p2sAddressPool',[]],
     ['expressRoute','yes','no','erProvider',[]],
