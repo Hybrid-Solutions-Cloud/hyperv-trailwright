@@ -51,6 +51,7 @@ export function demoProject(scenario: number): Project {
     p.components = []
     const ome = component('ome', 'example-ome')
     ome.hosting = 'vsphere'
+    ome.productDetails.platform = 'dell-ome'
     ome.ome = { devices: 100, plugins: 'Choose supported plugins', discoveryScope: 'Example iDRAC device group; fill explicit bounded ranges', firmwareCatalog: 'Qualified vendor catalog reference', integrations: 'Review required plugins and integration versions', entitlement: 'Review existing advanced feature / plugin rights', manualSteps: 'Import supported appliance image; complete first boot; configure certificates; license; discover devices; validate integrations.' }
   }
   if (scenario === 7 || scenario === 8) {

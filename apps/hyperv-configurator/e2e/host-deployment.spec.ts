@@ -17,7 +17,7 @@ test('host deployment corrections retain observations, owners and physical links
   await page.getByLabel('Host OS installation/configuration owner',{exact:true}).selectOption('vmm')
   await expect(page.getByRole('region',{name:'Host deployment review',exact:true})).toContainText('Install on confirmed bare metal / VMM')
   const savedEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Download project',exact:true}).click()
-  const saved=await readFile((await(await savedEvent).path())!,'utf8');expect(JSON.parse(saved)).toMatchObject({schemaVersion:32,design:{hosts:[{values:{osOwner:'vmm',currentState:'baremetal',pxeAdapter:adapter.id}}]}})
+  const saved=await readFile((await(await savedEvent).path())!,'utf8');expect(JSON.parse(saved)).toMatchObject({schemaVersion:33,design:{hosts:[{values:{osOwner:'vmm',currentState:'baremetal',pxeAdapter:adapter.id}}]}})
   await page.locator('input[type=file]').first().setInputFiles({name:'reopened-host.json',mimeType:'application/json',buffer:Buffer.from(saved)})
   await nav.getByRole('button',{name:/Hosts and provisioning/}).click()
   await page.setViewportSize({width:390,height:844});await page.getByRole('region',{name:'Host deployment review',exact:true}).scrollIntoViewIfNeeded()

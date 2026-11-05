@@ -96,7 +96,7 @@ export function designMarkdown(project: Project): string {
       '| Property | Value |', '| --- | --- |', ...Object.entries(c).filter(([key, value]) => typeof value !== 'object' && key !== 'id').map(([key, value]) => `| ${safeMd(key)} | ${safeMd(value)} |`), '',
       '#### Hosting and availability', '', answerTable(project, hostingFields, c.hostingDetails), '',
       '#### Product configuration', '', answerTable(project, productFields[c.product], c.productDetails), '')
-    if (c.product === 'ome') lines.push('#### Dell OME manual deployment', '', 'OME appliance installation is an operator task; no automated appliance installation is generated.', '', ...Object.entries(c.ome).map(([key, value]) => `- ${safeMd(key)}: ${safeMd(value) || 'Not specified'}`), '')
+    if (c.product === 'ome') lines.push('#### Hardware management appliance manual deployment', '', 'Appliance installation is an operator task; no automated appliance installation is generated.', '', ...Object.entries(c.ome).map(([key, value]) => `- ${safeMd(key)}: ${safeMd(value) || 'Not specified'}`), '')
   }
   lines.push('## SDN architecture and setup', '', ...Object.entries(project.sdn).filter(([key])=>key!=='details').map(([key, value]) => `- ${safeMd(key)}: ${safeMd(value) || 'Not specified'}`), '')
   lines.push('## Component decisions', '', 'Each component starts with a used / not-used decision. Only the follow-up answers that apply are listed.', '', answerTable(project, allActiveDecisionFields(project), project.decisions), '')
@@ -171,8 +171,8 @@ export function managementProductMarkdown(project:Project,includeInputs=true):st
 }
 export function omeMarkdown(project:Project):string{
   const plan=omePlan(project)
-  return ['## OME capacity and manual acceptance','',plan.meaning,'',...plan.appliances.flatMap(a=>[
-    '### '+safeMd(a.name),'',a.vendor?'Vendor requirement: '+a.vendor.cores+' cores; '+a.vendor.memoryGB+' GB memory; '+a.vendor.primaryGB+' + '+a.vendor.secondaryGB+' GB disks.':'Sizing requires review.',
+  return ['## Hardware management capacity and manual acceptance','',plan.meaning,'',...plan.appliances.flatMap(a=>[
+    '### '+safeMd(a.name),'','Platform: '+(safeMd(a.platformLabel)||'Not chosen'),'',a.vendor?'Vendor requirement: '+a.vendor.cores+' cores; '+a.vendor.memoryGB+' GB memory; '+a.vendor.primaryGB+' + '+a.vendor.secondaryGB+' GB disks.':'Sizing requires review.',
     a.required?'Reviewed allocation minimum: '+a.required.vCpu+' vCPU; '+a.required.memoryGiB+' GiB memory; '+a.required.primaryDiskGiB+' + '+a.required.secondaryDiskGiB+' GiB disks.':'No reviewed GiB conversion.',
     '','| Manual milestone | State | Owner | Evidence | UTC observation |','| --- | --- | --- | --- | --- |',...a.milestones.map(m=>'| '+[m.label,m.state,m.owner,m.evidence,m.observedAt].map(safeMd).join(' | ')+' |'),'',...a.findings.map(f=>'- '+f.code+': '+safeMd(f.message)),''
   ])].join('\n')
@@ -271,7 +271,7 @@ export function implementationMarkdown(project: Project): string {
     '5. Configure the selected cluster, storage and host networking using the assigned single owner.',
     '6. Install/configure selected management components using supported dependencies and availability topology.',
   ]
-  if (project.components.some(c => c.product === 'ome')) lines.push('7. Manually import and initialize OME; validate licensing, discovery, catalogs and selected integrations.')
+  if (project.components.some(c => c.product === 'ome')) lines.push('7. Manually import and initialize the hardware management appliance; validate licensing, discovery, catalogs and selected integrations.')
   if(project.sdn.scope!=='none')lines.push(sdnMarkdown(project),sdnEvidenceMarkdown(project))
   lines.push('', '## Assigned stages', '')
   const plan = stagePlan(project)
@@ -325,8 +325,8 @@ function workbook(project: Project) {
   XLSX.utils.book_append_sheet(book,XLSX.utils.json_to_sheet(roles.components.map(c=>({Component:c.name,ComponentId:c.componentId,Product:c.product,Role:c.role||'Not selected',Version:c.version,Lifecycle:c.lifecycle,Hosting:c.hosting,ConfigurationRequested:c.configurationRequested,RuntimeQualified:'No',UnresolvedInputs:c.findings.length}))), 'Management roles')
   XLSX.utils.book_append_sheet(book,XLSX.utils.json_to_sheet(project.components.filter(c=>c.product!=='ome').flatMap(c=>productFields[c.product].map(f=>({Component:c.name,ComponentId:c.id,Product:c.product,Field:f.label,Value:renderAnswer(project,f,c.productDetails[f.key])})))), 'Product configuration')
   const ome=omePlan(project)
-  XLSX.utils.book_append_sheet(book,XLSX.utils.json_to_sheet(ome.appliances.map(a=>({Appliance:a.name,ComponentId:a.componentId,Profile:a.profile,VendorCores:a.vendor?.cores??'Review',VendorMemoryGB:a.vendor?.memoryGB??'Review',VendorPrimaryGB:a.vendor?.primaryGB??'Review',VendorSecondaryGB:a.vendor?.secondaryGB??'Review',MinimumMemoryGiB:a.required?.memoryGiB??'Review',AllocatedMemoryGiB:a.allocated.memoryGiB,AllocatedDiskGiB:a.allocated.diskGiB,Installation:a.installation,RuntimeQualified:'No'}))),'OME capacity')
-  XLSX.utils.book_append_sheet(book,XLSX.utils.json_to_sheet(ome.appliances.flatMap(a=>a.milestones.map(m=>({Appliance:a.name,ComponentId:a.componentId,Milestone:m.label,State:m.state,Owner:m.owner,Evidence:m.evidence,ObservedAt:m.observedAt,Verification:m.verification})))),'OME manual acceptance')
+  XLSX.utils.book_append_sheet(book,XLSX.utils.json_to_sheet(ome.appliances.map(a=>({Appliance:a.name,ComponentId:a.componentId,Platform:a.platformLabel||'Not chosen',Profile:a.profile,VendorCores:a.vendor?.cores??'Review',VendorMemoryGB:a.vendor?.memoryGB??'Review',VendorPrimaryGB:a.vendor?.primaryGB??'Review',VendorSecondaryGB:a.vendor?.secondaryGB??'Review',MinimumMemoryGiB:a.required?.memoryGiB??'Review',AllocatedMemoryGiB:a.allocated.memoryGiB,AllocatedDiskGiB:a.allocated.diskGiB,Installation:a.installation,RuntimeQualified:'No'}))),'Hardware mgmt capacity')
+  XLSX.utils.book_append_sheet(book,XLSX.utils.json_to_sheet(ome.appliances.flatMap(a=>a.milestones.map(m=>({Appliance:a.name,ComponentId:a.componentId,Milestone:m.label,State:m.state,Owner:m.owner,Evidence:m.evidence,ObservedAt:m.observedAt,Verification:m.verification})))),'Hardware mgmt acceptance')
   XLSX.utils.book_append_sheet(book,XLSX.utils.json_to_sheet(managementRows(project).map(([Decision,Answer])=>({Decision,Answer}))),'Management decisions')
   XLSX.utils.book_append_sheet(book,XLSX.utils.json_to_sheet(supportPlan(project).rows.map(row=>({Target:row.targetName,TargetId:row.targetId,Topic:row.entry.topic,Baseline:row.entry.baseline,Status:row.entry.status,Basis:row.entry.basis,Summary:row.entry.summary,Conditions:row.entry.conditions.join('; '),Sources:row.entry.sources.join('\n'),CatalogVersion:SUPPORT_CATALOG.version,ReviewedAt:SUPPORT_CATALOG.reviewedAt}))),'Support references')
   XLSX.utils.book_append_sheet(book,XLSX.utils.json_to_sheet([['Project name',project.name],['Design owner',project.owner],['Scope',scopes[project.scope]],...contextRows(project)].map(([Decision,Value])=>({Decision,Value}))),'Project context')
@@ -412,9 +412,9 @@ function pdf(project: Project): jsPDF {
     paragraph(c.name || products[c.product], true)
     table(Object.entries(c).filter(([key, value]) => typeof value !== 'object' && key !== 'id').map(([key, value]) => [key, String(value)]))
     answers(hostingFields, c.hostingDetails); answers(productFields[c.product], c.productDetails)
-    if (c.product === 'ome') { paragraph('OME manual appliance deployment', true); table(Object.entries(c.ome).map(([key, value]) => [key, String(value) || 'Not specified'])) }
+    if (c.product === 'ome') { paragraph('Hardware management appliance manual deployment', true); table(Object.entries(c.ome).map(([key, value]) => [key, String(value) || 'Not specified'])) }
   }
-  for(const a of omePlan(project).appliances){paragraph(a.name+' / OME capacity and manual acceptance',true);paragraph('Operator observations only; runtime qualification remains pending.');table([['Vendor sizing',a.vendor?`${a.vendor.cores} cores / ${a.vendor.memoryGB} GB / ${a.vendor.primaryGB} + ${a.vendor.secondaryGB} GB disks`:'Review required'],['Reviewed GiB allocation',a.required?`${a.required.memoryGiB} GiB memory / ${a.required.primaryDiskGiB} + ${a.required.secondaryDiskGiB} GiB disks`:'Review required']]);for(const m of a.milestones)table([['Milestone',m.label],['State / owner',m.state+' / '+m.owner],['Evidence / UTC',m.evidence+' / '+m.observedAt]])}
+  for(const a of omePlan(project).appliances){paragraph(a.name+' / hardware management capacity and manual acceptance',true);paragraph('Operator observations only; runtime qualification remains pending.');table([['Vendor sizing',a.vendor?`${a.vendor.cores} cores / ${a.vendor.memoryGB} GB / ${a.vendor.primaryGB} + ${a.vendor.secondaryGB} GB disks`:'Review required'],['Reviewed GiB allocation',a.required?`${a.required.memoryGiB} GiB memory / ${a.required.primaryDiskGiB} + ${a.required.secondaryDiskGiB} GiB disks`:'Review required']]);for(const m of a.milestones)table([['Milestone',m.label],['State / owner',m.state+' / '+m.owner],['Evidence / UTC',m.evidence+' / '+m.observedAt]])}
   const omissions=omissionSummary(project)
   if(omissions.components.length){paragraph('Omitted components',true);paragraph(omissions.meaning);for(const c of omissions.components)table([['Component / product',(c.name||c.componentId)+' / '+products[c.product]],['Previous lifecycle',c.priorLifecycle],['Omission reason',c.reason||'Review needed'],['Review owner',c.reviewOwner||'Review needed'],['Omitted at',c.omittedAt],['Active capacity and execution','Excluded']])}
   const support=supportPlan(project)

@@ -25,7 +25,7 @@ test('storage lifecycle and disk mappings survive editing, reopen and package ex
   await page.screenshot({path:info.outputPath('placement-mobile.png'),fullPage:true})
   const saveEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Download project',exact:true}).click()
   const saved=await readFile((await(await saveEvent).path())!,'utf8')
-  expect(JSON.parse(saved)).toMatchObject({schemaVersion:32,design:{storageAllocations:[{values:{resource:'workload-a',sizeGiB:150}}]}})
+  expect(JSON.parse(saved)).toMatchObject({schemaVersion:33,design:{storageAllocations:[{values:{resource:'workload-a',sizeGiB:150}}]}})
   await page.locator('input[type=file]').first().setInputFiles({name:'reopen-placement.json',mimeType:'application/json',buffer:Buffer.from(saved)})
   await page.getByRole('button',{name:/Review and exports/}).click()
   const zipEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Download design package (.zip)',exact:true}).click()

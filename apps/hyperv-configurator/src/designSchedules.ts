@@ -3,7 +3,8 @@ import {networkDesign} from './networkDesign'
 import {topologyGraph} from './topology'
 import {collections,type DesignRecord} from './catalog'
 import {collectionApplies} from './collectionScope'
-import {activeStorageLinks,componentUsed,decisionRecord} from './componentDecisions'
+import {activeStorageLinks,decisionRecord} from './componentDecisions'
+import {consoleServerPlatforms,firewallPlatforms,platformVendor,switchPlatforms} from './vendorPlatforms'
 const text=(value:unknown)=>String(value??'')
 export function designSchedules(project:Project){
  const graph=topologyGraph(project),names=new Map(graph.nodes.map(n=>[n.id,n.name])),name=(id:unknown)=>names.get(text(id))||text(id),get=(key:string,id:unknown)=>project.design[key].find(r=>r.id===id),network=networkDesign(project)
@@ -22,11 +23,12 @@ export function designSchedules(project:Project){
  }))
  // Network devices appear only when their component is used; records of an unused component stay in the project.
  const deviceRows=(key:string,fn:string,vendor:(r:DesignRecord)=>string,model:(r:DesignRecord)=>string)=>collectionApplies(collections.find(c=>c.key===key)!,project)?ordered(key).map(r=>({Device:text(r.values.name),DeviceId:r.id,Function:fn,Role:text(r.values.role||'standalone'),Vendor:vendor(r),Model:model(r),ManagementIP:text(r.values.managementIp),Serial:text(r.values.serial),Rack:text(r.values.rack)})):[]
- const d=project.decisions,opengear=componentUsed(project,'opengear')
+ const d=project.decisions
  const networkDevices=[
-  ...deviceRows('firewallDevices','Perimeter firewall',()=>'Fortinet',()=>text(d.fwModel)),
-  ...deviceRows('torSwitches','Top-of-rack switch',()=>d.torProvider==='dell-powerswitch'?'Dell':text(d.torVendor),()=>text(d.torModel)),
-  ...deviceRows('oobDevices',opengear?'Console server (Opengear)':'Out-of-band switch',r=>opengear?'Opengear':text(r.values.vendor),r=>text(r.values.model)),
+  ...deviceRows('firewallDevices','Perimeter firewall',()=>platformVendor(firewallPlatforms,d.firewallPlatform,d.firewallVendor),()=>text(d.fwModel)),
+  ...deviceRows('torSwitches','Top-of-rack switch',()=>platformVendor(switchPlatforms,d.torPlatform,d.torVendor),()=>text(d.torModel)),
+  ...deviceRows('oobDevices','Out-of-band management switch',()=>platformVendor(switchPlatforms,d.oobSwitchPlatform,d.oobSwitchVendor),r=>text(r.values.model)),
+  ...deviceRows('consoleServers','Console server',()=>platformVendor(consoleServerPlatforms,d.consoleServerPlatform,d.consoleServerVendor),r=>text(r.values.model)),
  ]
  const storageLinks=activeStorageLinks(project).sort((a,b)=>a.id.localeCompare(b.id)).map(l=>({Link:text(l.values.name),LinkId:l.id,StorageSystem:name(l.values.storageSystem),LinkIndex:l.values.linkIndex,NodeA:name(l.values.hostA),AdapterA:name(l.values.adapterA),PortA:text(l.values.portA),NodeB:name(l.values.hostB),AdapterB:name(l.values.adapterB),PortB:text(l.values.portB),Network:name(l.values.network),Subnet:text(l.values.subnet),VLAN:l.values.vlan}))
  return {kind:'hyperv-design-schedules',version:'1.1.0',projectId:project.id,revision:project.revision,networks:networkRows,addresses,ports,interfaces,storage,dependencies,decisions,networkDevices,storageLinks}

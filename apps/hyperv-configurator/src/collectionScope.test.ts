@@ -43,13 +43,15 @@ describe('collection disclosure', () => {
     const applies = (key: string) => collectionApplies(collections.find(c => c.key === key)!, project)
     for (const key of networkDeviceKeys) project.design[key] = [record({ name: 'Retained ' + key })] as unknown as typeof project.design.sites
     for (const key of networkDeviceKeys) expect(applies(key), key).toBe(false)
-    project.decisions.firewallProvider = 'customer'
-    expect(applies('firewallDevices')).toBe(false)
-    project.decisions.firewallProvider = 'managed-fortigate'; project.decisions.torProvider = 'customer'; project.decisions.oobModel = 'oob-switch'
-    for (const key of ['firewallDevices', 'firewallInterfaces', 'firewallGateways', 'torSwitches', 'oobDevices']) expect(applies(key), key).toBe(true)
-    expect(applies('consolePorts')).toBe(false)
-    project.decisions.oobModel = 'opengear'
-    expect(applies('consolePorts')).toBe(true)
+    for (const provider of ['provider', 'customer']) {
+      project.decisions.firewallProvider = provider
+      for (const key of ['firewallDevices', 'firewallInterfaces', 'firewallGateways']) expect(applies(key), `${provider} ${key}`).toBe(true)
+    }
+    project.decisions.torProvider = 'customer'; project.decisions.oobSwitch = 'yes'
+    for (const key of ['torSwitches', 'oobDevices']) expect(applies(key), key).toBe(true)
+    expect(applies('consoleServers')).toBe(false); expect(applies('consolePorts')).toBe(false)
+    project.decisions.consoleServer = 'yes'; project.decisions.oobSwitch = 'no'
+    expect(applies('consoleServers')).toBe(true); expect(applies('consolePorts')).toBe(true); expect(applies('oobDevices')).toBe(false)
     project.decisions.backupInScope = 'no'; project.decisions.monitoringInScope = 'no'
     expect(applies('recoveryTests')).toBe(false); expect(applies('capacityAlerts')).toBe(false)
   })

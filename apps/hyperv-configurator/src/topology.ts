@@ -12,9 +12,9 @@ export interface TopologyGraph {kind:'hyperv-topology';version:string;projectId:
 const sdns=new Set(sdnCollectionKeys)
 const seeds:Record<Exclude<TopologyView,'overview'>,string[]>={
  management:['components','availabilityGroups','availabilityMembers','availabilityDatabases','managementNetworks','identities','identityBindings','mediaBindings','operationsTargets','securityPolicies'],
- physical:['sites','clusters','hosts','adapters','switchMembers','disks','storageInterfaces','sanPaths','firewallDevices','torSwitches','oobDevices','consolePorts'],
+ physical:['sites','clusters','hosts','adapters','switchMembers','disks','storageInterfaces','sanPaths','firewallDevices','torSwitches','oobDevices','consoleServers','consolePorts'],
  logical:['clusters','components','workloads','availabilityGroups','availabilityMembers','availabilityDatabases','hostSwitches','hostVnics','networks','sdnResources','tenantServices'],
- network:['networks','adapters','hostSwitches','switchMembers','hostVnics','addressAssignments','networkTrafficClasses','managementNetworks','firewallDevices','firewallInterfaces','firewallGateways','torSwitches','oobDevices',...sdnCollectionKeys],
+ network:['networks','adapters','hostSwitches','switchMembers','hostVnics','addressAssignments','networkTrafficClasses','managementNetworks','firewallDevices','firewallInterfaces','firewallGateways','torSwitches','oobDevices','consoleServers',...sdnCollectionKeys],
  storage:['storageSystems','disks','volumes','storagePaths','storageAllocations','sanPaths','storageInterfaces'],
  deployment:['stages','profiles','media','mediaBindings','identityBindings'],
 }

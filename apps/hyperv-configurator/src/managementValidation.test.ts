@@ -144,7 +144,7 @@ describe('schema migration and availability exports', () => {
     for (const row of legacy.design.clusters) for (const key of ['clusterModuleVersion','seedHost','domainFqdn','managementNetwork']) delete row.values[key]
     for (const row of legacy.design.clusters) for (const key of quorumFields) delete row.values[key]
     const migrated = parseProject(JSON.stringify(legacy))
-    expect(migrated.schemaVersion).toBe(32)
+    expect(migrated.schemaVersion).toBe(33)
     expect(migrated.components).toEqual(current.components)
     expect(migrated.design.hosts).toEqual(current.design.hosts)
     expect(migrated.design.availabilityGroups).toEqual([])

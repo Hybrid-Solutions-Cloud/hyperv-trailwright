@@ -55,7 +55,7 @@ export function validate(project: Project): Finding[] {
     if (c.product === 'vmm' && c.hosting === 'hyperv-workload' && c.lifecycle === 'new' && !c.hostingDetails.bootstrap) add('BOOTSTRAP_CYCLE', 'hosting', `${name}: provide an independent bootstrap path.`, c.id)
     if (c.product === 'arc' && project.requirements.offline) add('OFFLINE_ARC', 'management', `${name}: Azure-dependent operations cannot satisfy offline management.`, c.id)
     if (c.product === 'ome') {
-      if (c.hosting === 'physical' || c.hostingDetails.installProduct) add('OME_MANUAL', 'hosting', `${name}: OME requires a supported appliance platform and manual installation.`, c.id)
+      if (c.hosting === 'physical' || c.hostingDetails.installProduct) add('OME_MANUAL', 'hosting', `${name}: a hardware management appliance requires a supported appliance platform and manual installation.`, c.id)
       if (!c.ome.manualSteps || !c.ome.entitlement || !c.ome.discoveryScope) add('OME_HANDOFF', 'products', `${name}: record appliance setup tasks, entitlement and discovery scope.`, c.id)
     }
     if (!c.hostingDetails.supportEvidence) add('COMPATIBILITY_REVIEW', 'hosting', `${name}: verify the selected OS, product, hosting and HA combination.`, c.id, 'warning')
@@ -85,7 +85,7 @@ export function validate(project: Project): Finding[] {
       }
       if (collection.key === 'hosts' && v.lifecycle === 'replace' && !v.reimageScope) add('REIMAGE_SCOPE', 'hardware', `${name}: specify approved replacement scope and preservation checks.`, row.id)
       if (collection.key === 'stages') {
-        if (v.kind === 'ome' && v.executor !== 'operator') add('OME_EXECUTOR', 'automation', `${name}: OME installation must remain a manual operator task.`, row.id)
+        if (v.kind === 'ome' && v.executor !== 'operator') add('OME_EXECUTOR', 'automation', `${name}: hardware management appliance installation must remain a manual operator task.`, row.id)
         if (v.status === 'passed' && (!v.evidence || !v.observedAt)) add('EXECUTION_EVIDENCE', 'automation', `${name}: a passed stage requires runtime evidence and observation time.`, row.id)
       }
       if (collection.key === 'media' && v.sha256 && !/^[a-f0-9]{64}$/i.test(String(v.sha256))) add('ARTIFACT_HASH', 'identity', `${name}: SHA-256 must contain 64 hexadecimal characters.`, row.id)

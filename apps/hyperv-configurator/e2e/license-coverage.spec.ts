@@ -22,7 +22,7 @@ test('shared System Center estate and supporting SQL rights survive correction, 
   await database.getByLabel('SQL workload purpose *',{exact:true}).selectOption('other');await expect(sql).toContainText('Review rights / quantity')
   await database.getByLabel('SQL workload purpose *',{exact:true}).selectOption('vmm');await expect(sql).toContainText('USD 0')
   const savedEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Download project',exact:true}).click()
-  const saved=await readFile((await(await savedEvent).path())!,'utf8');expect(JSON.parse(saved).schemaVersion).toBe(32)
+  const saved=await readFile((await(await savedEvent).path())!,'utf8');expect(JSON.parse(saved).schemaVersion).toBe(33)
   await page.locator('input[type=file]').first().setInputFiles({name:'coverage-reopened.json',mimeType:'application/json',buffer:Buffer.from(saved)})
   await expect(sql).toContainText('USD 0')
   await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true)

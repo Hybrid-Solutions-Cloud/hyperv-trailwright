@@ -24,7 +24,7 @@ test('physical licensing retains failover quantities, quote review and entitleme
   await expect(gap).toContainText('USD 360')
   const downloadEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Download project',exact:true}).click()
   const saved=await readFile((await(await downloadEvent).path())!,'utf8')
-  expect(JSON.parse(saved)).toMatchObject({schemaVersion:32,design:{licenses:[{values:{owned:8,unitPrice:15,calculationModel:'physical'}}]}})
+  expect(JSON.parse(saved)).toMatchObject({schemaVersion:33,design:{licenses:[{values:{owned:8,unitPrice:15,calculationModel:'physical'}}]}})
   expect(JSON.parse(saved).design.licenseAssignments[1].values.peakVirtualOSEs).toBe(6)
   await page.locator('input[type=file]').first().setInputFiles({name:'reopen-licenses.json',mimeType:'application/json',buffer:Buffer.from(saved)})
   await expect(gap).toContainText('USD 360')

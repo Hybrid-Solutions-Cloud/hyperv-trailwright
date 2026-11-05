@@ -49,7 +49,7 @@ export function stagePlan(project: Project) {
     for (const id of dependsOn) if (!stageIds.has(id)) add('STAGE_DEPENDENCY_MISSING', `${name}: prerequisite stage ${id} is missing.`, row.id)
     if (dependsOn.includes(row.id)) add('STAGE_SELF_DEPENDENCY', `${name}: a stage cannot depend on itself.`, row.id)
     if (['name', 'owner', 'kind', 'executor', 'acceptance', 'status'].some(key => !String(v[key] ?? '').trim())) add('STAGE_DETAILS', `${name}: record its name, owner, kind, executor, acceptance checks and observed state.`, row.id)
-    if (v.executor !== 'operator' && (v.kind === 'ome' || (v.kind === 'management' && targets.some(id => omeIds.has(id))))) add('STAGE_OME_MANUAL', `${name}: OME installation must be an operator task, including stages labelled management installation.`, row.id)
+    if (v.executor !== 'operator' && (v.kind === 'ome' || (v.kind === 'management' && targets.some(id => omeIds.has(id))))) add('STAGE_OME_MANUAL', `${name}: hardware management appliance installation must be an operator task, including stages labelled management installation.`, row.id)
     if (v.status === 'failed' && (!v.evidence || !v.rollback)) add('STAGE_FAILURE_REVIEW', `${name}: attach failure evidence and a reviewed recovery/resume procedure.`, row.id)
     const timestamp = String(v.observedAt)
     const date = timestamp.slice(0, 10), calendarDate = new Date(`${date}T00:00:00Z`)

@@ -32,7 +32,7 @@ it('keeps WAC modes and gateway topology consistent without altering allocations
 it('migrates actual schema 12 records with no invented roles and rejects future or unknown inputs',()=>{
   const project=newProject(),c=newComponent('scom');project.components.push(c);c.productDetails.managementGroup='Preserved group'
   const legacy:any=structuredClone(project);legacy.schemaVersion=12;expect(()=>parseProject(JSON.stringify(legacy))).toThrow('Schema 12')
-  removeManagementV13(legacy);const next=parseProject(JSON.stringify(legacy));expect(next.schemaVersion).toBe(32);expect(next.components[0].productDetails.role).toBe('');expect(next.components[0].productDetails.managementGroup).toBe('Preserved group')
+  removeManagementV13(legacy);const next=parseProject(JSON.stringify(legacy));expect(next.schemaVersion).toBe(33);expect(next.components[0].productDetails.role).toBe('');expect(next.components[0].productDetails.managementGroup).toBe('Preserved group')
   c.productDetails.role='database';expect(()=>serializeProject(project)).toThrow('SCOM primary role')
   c.productDetails.role='management';c.productDetails.actionCredentialRef='literal-credential';expect(()=>serializeProject(project)).toThrow('must use keyvault://')
 })

@@ -6,7 +6,7 @@ import {environmentFiles,omeMarkdown} from './exports'
 import {sanitizeProject} from './sanitize'
 import {removeHostingV14} from './testing/legacyHosting'
 
-const appliance=()=>{const c=newComponent('ome');c.version='4.7';c.ome.devices=500;c.productDetails.sizingProfile='small';c.productDetails.capacityUnits='binary';for(const p of omePlugins){c.productDetails['plugin_'+p.key]='disabled';c.productDetails['pluginVersion_'+p.key]=p.version}return c}
+const appliance=()=>{const c=newComponent('ome');c.productDetails.platform='dell-ome';c.version='4.7';c.ome.devices=500;c.productDetails.sizingProfile='small';c.productDetails.capacityUnits='binary';for(const p of omePlugins){c.productDetails['plugin_'+p.key]='disabled';c.productDetails['pluginVersion_'+p.key]=p.version}return c}
 it('adds selected plug-in memory without multiplying CPU and preserves unknown selections',()=>{
   const c=appliance();expect(omeAppliancePlan(c).required).toMatchObject({vCpu:4,memoryGiB:19,primaryDiskGiB:415,secondaryDiskGiB:415})
   for(const p of omePlugins)c.productDetails['plugin_'+p.key]='enabled'
@@ -42,7 +42,7 @@ it('migrates OME answers without inventing plug-in, sizing or acceptance decisio
   const old:any=structuredClone(project);old.schemaVersion=11
   for(const f of omePlanningFields)delete old.components[0].productDetails[f.key]
   removeHostingV14(old)
-  const next=parseProject(JSON.stringify(old));expect(next.schemaVersion).toBe(32);expect(next.components[0].id).toBe(c.id);expect(next.components[0].ome).toEqual(c.ome)
+  const next=parseProject(JSON.stringify(old));expect(next.schemaVersion).toBe(33);expect(next.components[0].id).toBe(c.id);expect(next.components[0].ome).toEqual(c.ome)
   expect(next.components[0].productDetails.plugin_aiops).toBe('');expect(next.components[0].productDetails.manual_import).toBe('')
   old.components[0].productDetails.sizingProfile='small';expect(()=>parseProject(JSON.stringify(old))).toThrow('Schema 11')
   c.productDetails.plugin_aiops='maybe';expect(()=>serializeProject(project)).toThrow('Unknown')
@@ -52,4 +52,15 @@ it('exports derived OME plans consistently and scrubs addresses, identities and 
   const files=environmentFiles(project),plan=JSON.parse(files['plans/ome-manual.json'])
   expect(plan.projectId).toBe(project.id);expect(plan.appliances[0].vendor.memoryGB).toBe(19);expect(plan.appliances[0].runtimeQualified).toBe(false)
   expect(omeMarkdown(project)).toContain('19 GB memory');const shared=serializeProject(sanitizeProject(project));expect(shared).not.toContain('10.0.0.1');expect(shared).not.toContain('private-change-123');expect(shared).toContain('secret-ref://withheld/reference')
+})
+it('asks for the hardware management platform and applies Dell sizing rules only to Dell OME',()=>{
+  const unset=newComponent('ome');expect(omeAppliancePlan(unset).findings.map(f=>f.code)).toContain('HWM_PLATFORM')
+  const oneview=newComponent('ome');oneview.productDetails.platform='hpe-oneview';oneview.ome.devices=200
+  const plan=omeAppliancePlan(oneview),codes=plan.findings.map(f=>f.code)
+  expect(plan.platformLabel).toBe('HPE OneView');expect(plan.sizingCatalog).toBe('vendor-review');expect(plan.vendor).toBeNull();expect(plan.plugins).toEqual([])
+  for(const dellOnly of ['OME_SIZING_PROFILE','OME_PLUGIN_SELECTION','OME_DISKS','OME_DISK_PAIR','OME_DISK_TOTAL','HWM_PLATFORM'])expect(codes,dellOnly).not.toContain(dellOnly)
+  expect(plan.findings.find(f=>f.code==='OME_SIZING_EVIDENCE')?.severity).toBe('error')
+  oneview.productDetails.platform='other';expect(omeAppliancePlan(oneview).findings.map(f=>f.code)).toContain('HWM_PLATFORM_NAME')
+  oneview.productDetails.platformName='Example vendor manager';expect(omeAppliancePlan(oneview).platformLabel).toBe('Example vendor manager')
+  const dell=appliance();expect(omeAppliancePlan(dell).platformLabel).toBe('Dell OpenManage Enterprise');expect(omeAppliancePlan(dell).sizingCatalog).toBe('dell-ome-4.7')
 })

@@ -108,7 +108,7 @@ describe('per-host deployment scope',()=>{
     const {project}=vmmFixture(),old:any=structuredClone(project);old.schemaVersion=18
     expect(()=>parseProject(JSON.stringify(old))).toThrow('Schema 18')
     removeHostDeploymentV19(old);const migrated=parseProject(JSON.stringify(old))
-    expect(migrated.schemaVersion).toBe(32);expect(migrated.design.hosts[0].values).toMatchObject({currentState:'',osAction:'',osOwner:'',inventoryObservedAt:'',site:''})
+    expect(migrated.schemaVersion).toBe(33);expect(migrated.design.hosts[0].values).toMatchObject({currentState:'',osAction:'',osOwner:'',inventoryObservedAt:'',site:''})
     old.design.clusters[0].values.startingState='mixed';expect(()=>parseProject(JSON.stringify(old))).toThrow('Schema 18')
   })
   it('retains deployment inputs across save/open, machine plans, worksheets and linked topology',()=>{

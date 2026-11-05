@@ -50,7 +50,8 @@ export function componentSupportIds(component:Component):string[]{
   if(component.product==='scom'&&releaseLabel(component.version,'2025'))return ['scom-2025-roles','scom-2025-sql']
   if(component.product==='wac')return component.productDetails.mode==='virtualization'?['wac-virtualization','wac-virtualization-hosts']:component.productDetails.mode==='administration'?['wac-administration']:[]
   if(component.product==='arc')return ['arc-vmm']
-  if(component.product==='ome'&&releaseLabel(component.version,'4.7'))return [component.hosting.startsWith('hyperv-')?'ome-47-hyperv':component.hosting==='vsphere'?'ome-47-vsphere':'ome-47-provider-wrapper','ome-manual-install']
+  // The OME support matrix applies to Dell OpenManage Enterprise only; other hardware management appliances use vendor review.
+  if(component.product==='ome'&&['','dell-ome'].includes(String(component.productDetails.platform??''))&&releaseLabel(component.version,'4.7'))return [component.hosting.startsWith('hyperv-')?'ome-47-hyperv':component.hosting==='vsphere'?'ome-47-vsphere':'ome-47-provider-wrapper','ome-manual-install']
   return []
 }
 export function supportPlan(project:Project){

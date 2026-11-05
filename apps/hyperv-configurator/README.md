@@ -1,8 +1,10 @@
 # Hyper-V Configurator
 
-Version: 0.35.0
+Version: 0.36.0
 
-Component decisions (schema 31) start every firewall, VPN, ExpressRoute, ToR, OOB, backup and monitoring component with a used / not-used question. Not-used answers hide their follow-up questions, stay in the saved project and are left out of `infrastructure.yml`, the master design file in the Azure Local Toolkit shape.
+Vendor-neutral design (schema 33): firewall, top-of-rack, out-of-band switch, console server, server hardware and hardware management answers separate who supplies a component from which vendor platform it runs. Every platform list lives in `src/vendorPlatforms.ts`, and `infrastructure.yml` takes each device's vendor and OS from that answer.
+
+Component decisions (schema 31) start every firewall, VPN, ExpressRoute, ToR, OOB switch, console server, backup and monitoring component with a used / not-used question. Not-used answers hide their follow-up questions, stay in the saved project and are left out of `infrastructure.yml`, the master design file in the Azure Local Toolkit shape.
 
 [Licensing coverage and quotes](docs/licensing-and-quotes.md) separate entitlement rights from activation, map physical/virtual and managed-estate coverage, and review shared supporting SQL. Access audiences, Azure service meters and OME/SDN/third-party dependencies credit existing coverage before purchase gaps. Schemas28–30 preserve the prior SDN architecture and introduce no inferred entitlements. Missing scope, rights or quote evidence remains unresolved.
 
@@ -30,7 +32,7 @@ Component decisions (schema 31) start every firewall, VPN, ExpressRoute, ToR, OO
 
 [Management product contracts](docs/management-products.md) collect explicit roles, reviewed OS inputs, VMM/SCOM/SQL dependencies, WAC topology and supporting-service acceptance. Validation distinguishes role-specific support and installed/configured scope; existing services are not created implicitly. Schema 13 preserves older product notes and adds unanswered role inputs. Role and configuration schedules accompany the design package.
 
-[OME planning](docs/ome-planning.md) adds release-specific device/plug-in sizing, explicit capacity-unit review, two-disk reconciliation, bounded discovery targets and eight manual acceptance milestones. Schema 12 retains unanswered decisions when migrating old OME records. Capacity and operator evidence are included in the website, package, PDF and workbook; no appliance installation or runtime acceptance is inferred.
+[Hardware management appliance planning](docs/ome-planning.md) covers Dell OpenManage Enterprise, HPE OneView, Lenovo XClarity Administrator and other appliances. For Dell OME it adds release-specific device/plug-in sizing, explicit capacity-unit review, two-disk reconciliation, bounded discovery targets and eight manual acceptance milestones. Schema 12 retains unanswered decisions when migrating old OME records. Capacity and operator evidence are included in the website, package, PDF and workbook; no appliance installation or runtime acceptance is inferred.
 
 [Management decisions](docs/management-decisions.md) explain capability-led candidates, deployment ownership, offline/Azure conflicts, preview gates and separate commercial reviews. The [dated support catalog](docs/support-catalog.md) retains vendor baselines, sources and limits across the website and reports. Schema 11 adds unanswered decisions to older projects without changing their inventories or requirements.
 
@@ -51,7 +53,7 @@ Status: Development preview; full implementation goal remains active.
 
 This is the standalone Hyper-V Configurator tool. It is a separate website tool alongside Hyper-V Surveyor and is not a section of Surveyor.
 
-The implementation covers management-plane design, component placement and HA, cluster provisioning and VMM bare-metal collection, storage/network/identity, licensing, Dell OME appliance design and manual handoff, optional SDN design/setup, and reports and configuration exports.
+The implementation covers management-plane design, component placement and HA, cluster provisioning and VMM bare-metal collection, storage/network/identity, licensing, hardware management appliance design and manual handoff (Dell OME, HPE OneView, Lenovo XClarity Administrator), optional SDN design/setup, and reports and configuration exports.
 
 Hyper-V Surveyor provides research material and interoperability examples. The Configurator owns its project model and workflow. Generating files does not deploy infrastructure; OME appliance installation remains manual.
 
@@ -87,7 +89,7 @@ Browser tests use installed Chrome on Windows. CI installs Chromium. Set `E2E_BA
 ## Implemented design capabilities
 
 - Owned project schema, typed import validation, autosave, download/open and optional Hyper-V Surveyor import with source hash and original workload IDs.
-- Management requirements; individual VMM, SCOM, SQL, WAC, identity/PKI, library/PXE, Arc, runner and Dell OME records; per-component lifecycle, hosting, resources, HA and product configuration.
+- Management requirements; individual VMM, SCOM, SQL, WAC, identity/PKI, library/PXE, Arc, runner and hardware management appliance records; per-component lifecycle, hosting, resources, HA and product configuration.
 - Structured service/database availability groups, component memberships, typed prerequisites, failure-domain tolerance and bootstrap/recovery ordering; schema 1 projects migrate without losing answers.
 - Sites/clusters, host/BMC/PXE inventory and VMM provisioning profiles, storage systems, physical drive layout, thin/fixed volumes, network/address pools and NIC ownership.
 - VMM profile configuration with image, Run As, BMC and network references, desired versus existing profile choices and an operator handoff.

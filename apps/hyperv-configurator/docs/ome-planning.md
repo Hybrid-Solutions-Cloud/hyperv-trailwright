@@ -1,6 +1,8 @@
-# OME appliance planning and manual acceptance
+# Hardware management appliance planning and manual acceptance
 
-OME remains a manually installed appliance. Choose an existing instance or a new manual deployment, pin the appliance image and hash, and record its actual provider, placement, addressing, certificate, RBAC and recovery design. The generic Windows installer and guest configuration controls are unavailable. Supported underlying ESXi does not establish a Cloud Director deployment contract.
+Every hardware management appliance starts with its platform: Dell OpenManage Enterprise, HPE OneView, Lenovo XClarity Administrator, or another product named by the designer. The Dell OME sizing profiles, plug-in catalog, capacity-unit review and two-disk rules below apply only to Dell OME. Other platforms record the vendor's release-specific sizing review as required evidence and share the discovery, operations and manual acceptance checks. DataON servers are managed through Windows Admin Center rather than an appliance. Schema 33 marks every earlier appliance record as Dell OME.
+
+The appliance remains manually installed. Choose an existing instance or a new manual deployment, pin the appliance image and hash, and record its actual provider, placement, addressing, certificate, RBAC and recovery design. The generic Windows installer and guest configuration controls are unavailable. Supported underlying ESXi does not establish a Cloud Director deployment contract.
 
 ## Reviewed capacity
 

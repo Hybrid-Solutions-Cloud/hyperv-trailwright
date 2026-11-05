@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.36.0 — vendor-neutral network, out-of-band and server hardware design
+
+- Project schema 33. Firewall and top-of-rack questions separate who supplies the component (provider or customer) from its platform. Firewalls cover Fortinet, Palo Alto Networks, Cisco, Check Point, Sophos, Juniper or a named vendor; switches cover Dell OS10 and SONiC, Cisco NX-OS and IOS XE, HPE Aruba CX, Juniper, Arista, NVIDIA Cumulus or a named vendor. Firewall units, interfaces and gateways now apply to customer firewalls too.
+- Out-of-band access is two questions: an OOB management switch (any standard switch, same platform list) and a console server (Opengear, Lantronix, Vertiv Avocent, Digi, Perle or a named vendor) with optional central management. A design can use either, both or neither.
+- Hosts record a server hardware platform: Dell PowerEdge, HPE ProLiant, Lenovo ThinkSystem, DataON, Cisco UCS, Supermicro or other. The hardware management appliance offers Dell OpenManage Enterprise, HPE OneView, Lenovo XClarity Administrator or another product; the Dell sizing and plug-in catalog applies only to Dell OME.
+- infrastructure.yml takes device_vendor and device_os from the platform answers and uses neutral keys: device_platform, device_ownership, device_virtual_contexts, device_pair_domain, device_central_management, networking.onprem.firewall, and node_bmc_ip / node_bmc_type in place of node_idrac_ip.
+- Schema 33 maps earlier answers where the meaning is explicit (Dell OS10 or SONiC ToR, Opengear console server, Dell OME appliance, server platform from the recorded manufacturer) and leaves anything else unanswered.
+- Help text, hints and reports no longer assume a single vendor. A unit test fails if a former service-provider name reappears in the repository.
+
 ## 0.35.0 — switchless cable map, device bill of materials and registry check
 
 - Project schema 32: switchless S2D storage systems record each direct node-to-node cable; validation checks the full mesh, port reuse and self links.

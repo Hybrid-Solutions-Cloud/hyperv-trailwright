@@ -24,8 +24,8 @@ export const licenseDependencyCollections:Collection[]=[
     select('benefit','Existing benefit treatment',{none:'No benefit claimed',allocation:'Allocated covered meter units',included:'Reviewed full inclusion'}),
     notes('benefitEvidence','Benefit eligibility, covered units and remaining meters'),notes('usageEvidence','Enabled services, host/guest scope and consumption estimate'),
   ]),
-  collection('licenseDependencies','OME, SDN and third-party license dependencies','license dependency','Map each selected feature to its reviewed entitlement. Reuse a license item across covered features without another charge; appliance and host/guest OS rights stay separate.',[
-    select('category','Dependency category',{ome:'OME / plugin / iDRAC feature',sdn:'SDN host / VM / network dependency',vmware:'VMware hosting',backup:'Backup',other:'Other third-party dependency'}),
+  collection('licenseDependencies','Hardware management, SDN and third-party license dependencies','license dependency','Map each selected feature to its reviewed entitlement. Reuse a license item across covered features without another charge; appliance and host/guest OS rights stay separate.',[
+    select('category','Dependency category',{ome:'Hardware management / plug-in / BMC feature',sdn:'SDN host / VM / network dependency',vmware:'VMware hosting',backup:'Backup',other:'Other third-party dependency'}),
     ref('target','Consuming resource','$licenseDependencyTargets'),text('feature','Feature / plugin / dependency identity'),
     notes('inventoryEvidence','Covered devices, service tags or resource allocation'),notes('versionEvidence','Exact product/plugin versions and required entitlement tier'),notes('coverageEvidence','Existing coverage, prerequisites and exclusions'),
   ]),

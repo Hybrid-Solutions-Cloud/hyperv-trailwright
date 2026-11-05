@@ -1,22 +1,21 @@
 import {visibleField,type Field} from './catalog'
 import type {Project} from './project'
 import type {Finding} from './validation'
-import {decisionGates,networkDecisionFields,operationsDecisionFields,switchedStorageKeys,FIREWALL,TOR,OOB,type DecisionGate} from './componentDecisionFields'
+import {decisionGates,networkDecisionFields,operationsDecisionFields,switchedStorageKeys,FIREWALL,TOR,type DecisionGate} from './componentDecisionFields'
 
 const answer=(project:Project,key:DecisionGate)=>String(project.decisions?.[key]??'')
 
 /** Whether a component is in use. An unanswered gate is not in use for exports; its questions stay visible until answered. */
-export function componentUsed(project:Project,component:'fortigate'|'customerFirewall'|'firewall'|'s2sVpn'|'p2sVpn'|'expressRoute'|'tor'|'oob'|'opengear'|'backup'|'monitoring'):boolean{
+export function componentUsed(project:Project,component:'firewall'|'s2sVpn'|'p2sVpn'|'expressRoute'|'tor'|'oob'|'consoleServer'|'oobNetwork'|'backup'|'monitoring'):boolean{
   switch(component){
-    case 'fortigate':return answer(project,'firewallProvider')==='managed-fortigate'
-    case 'customerFirewall':return answer(project,'firewallProvider')==='customer'
     case 'firewall':return FIREWALL.includes(answer(project,'firewallProvider'))
     case 's2sVpn':return answer(project,'siteToSiteVpn')==='yes'
     case 'p2sVpn':return answer(project,'pointToSiteVpn')==='yes'
     case 'expressRoute':return answer(project,'expressRoute')==='yes'
     case 'tor':return TOR.includes(answer(project,'torProvider'))
-    case 'oob':return OOB.includes(answer(project,'oobModel'))
-    case 'opengear':return answer(project,'oobModel')==='opengear'
+    case 'oob':return answer(project,'oobSwitch')==='yes'
+    case 'consoleServer':return answer(project,'consoleServer')==='yes'
+    case 'oobNetwork':return answer(project,'oobSwitch')==='yes'||answer(project,'consoleServer')==='yes'
     case 'backup':return answer(project,'backupInScope')==='yes'
     case 'monitoring':return answer(project,'monitoringInScope')==='yes'
   }
@@ -48,7 +47,7 @@ export function decisionRecord(project:Project){
     management_plane:{answer:project.scope,management_source:project.context.managementSource||'unanswered',used:project.scope!=='cluster'},
     firewall:gate('firewallProvider',componentUsed(project,'firewall')),
     site_to_site_vpn:gate('siteToSiteVpn',componentUsed(project,'s2sVpn')),point_to_site_vpn:gate('pointToSiteVpn',componentUsed(project,'p2sVpn')),expressroute:gate('expressRoute',componentUsed(project,'expressRoute')),
-    tor_switches:gate('torProvider',componentUsed(project,'tor')),out_of_band_management:gate('oobModel',componentUsed(project,'oob')),
+    tor_switches:gate('torProvider',componentUsed(project,'tor')),out_of_band_management:gate('oobSwitch',componentUsed(project,'oob')),console_server:gate('consoleServer',componentUsed(project,'consoleServer')),
     storage:rows('storageSystems').map(r=>({system:s(r.values.name)||r.id,answer:s(r.values.kind)||'unanswered',connectivity:r.values.kind==='s2d'?s(r.values.storageConnectivity)||'unanswered':undefined,used:true})),
     sdn:{answer:project.sdn.scope,used:project.sdn.scope!=='none'},
     cluster_witness:rows('clusters').map(r=>({cluster:s(r.values.name)||r.id,answer:s(r.values.witness)||'unanswered',used:['file','cloud','disk'].includes(s(r.values.witness))})),
@@ -67,12 +66,11 @@ export const allActiveDecisionFields=(project:Project)=>[...activeDecisionFields
 export function decisionHiddenFields(project:Project,collectionKey:string):Set<string>{
   const hidden=new Set<string>()
   const hide=(condition:boolean,...keys:string[])=>{if(condition)for(const key of keys)hidden.add(key)}
-  const tor=componentUsed(project,'tor'),oob=componentUsed(project,'oob'),opengear=componentUsed(project,'opengear')
+  const tor=componentUsed(project,'tor'),oob=componentUsed(project,'oob')
   if(collectionKey==='adapters')hide(!tor,'torSwitch','torPort')
   if(collectionKey==='hosts')hide(!oob,'bmcOobDevice','bmcOobPort')
   if(collectionKey==='firewallInterfaces')hide(!tor,'torSwitch','torPort')
-  if(collectionKey==='consolePorts'){hide(!tor,'targetTor');hide(!componentUsed(project,'fortigate'),'targetFirewall')}
-  if(collectionKey==='oobDevices'){hide(opengear,'vendor');hide(!opengear,'serialPortCount','cellularFailover','cellularApn')}
+  if(collectionKey==='consolePorts'){hide(!tor,'targetTor');hide(!componentUsed(project,'firewall'),'targetFirewall')}
   if(collectionKey==='operations'){
     hide(backupDeclined(project),'backup','backupMode','backupOwner','backupProvider','backupRepository','backupCredentialRef','backupIntervalMinutes','backupRetentionDays','backupConsistency','backupProtection','backupException')
     hide(monitoringDeclined(project),'monitoring','managementPacks','retentionDays','monitoringTool','scomComponent','discoveryAcceptance','alertOwner','alertRoute')

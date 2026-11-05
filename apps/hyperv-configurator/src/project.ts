@@ -23,8 +23,9 @@ import {sdnFabricFields,sdnRecordFields,sdnCollections} from './sdnFields'
 import {sdnServiceKeys} from './sdnServiceFields'
 import {validateSdnEvidenceState,type SdnEvidenceState} from './sdnEvidenceContract'
 import {decisionFields,decisionSecretKeys,networkDeviceKeys,networkDecisionV31Fields,STORAGE_LINKS_KEY} from './componentDecisionFields'
+import {migrateVendorNeutralV33} from './vendorNeutralMigration'
 
-export const SCHEMA_VERSION = 32 as const
+export const SCHEMA_VERSION = 33 as const
 export const PROJECT_KIND = 'hyperv-configurator-project' as const
 export const STORAGE_KEY = 'hyperv-configurator.project.v1'
 export const MAX_PROJECT_BYTES = 2 * 1024 * 1024
@@ -38,7 +39,7 @@ export const scopes = {
 export const products = {
   ...additionalProducts,
   vmm: 'Virtual Machine Manager', scom: 'Operations Manager', sql: 'SQL Server',
-  wac: 'Windows Admin Center', ome: 'Dell OpenManage Enterprise',
+  wac: 'Windows Admin Center', ome: 'Hardware management appliance',
   identity: 'Identity and DNS', pki: 'Certificate services', library: 'VMM library',
   pxe: 'PXE / Windows Deployment Services', arc: 'Arc resource bridge', runner: 'Automation runner',
 } as const
@@ -480,6 +481,10 @@ export function parseProject(text: string): Project {
     if(!record(raw.design)||Object.prototype.hasOwnProperty.call(raw.design,STORAGE_LINKS_KEY))throw new Error('Schema 31 cannot contain schema 32 switchless storage links.')
     raw.design={...raw.design,[STORAGE_LINKS_KEY]:[]};raw.schemaVersion=32
   }
+  if(raw.schemaVersion===32){
+    // Schema 33 makes firewall, ToR, out-of-band and server hardware answers vendor neutral (see vendorNeutralMigration.ts).
+    migrateVendorNeutralV33(raw)
+  }
   if (raw.schemaVersion !== SCHEMA_VERSION) throw new Error('Unsupported project schema. Open this file with a compatible Configurator version.')
   if (!Array.isArray(raw.components) || raw.components.length > 1000) throw new Error('Invalid management inventory or more than 1,000 components.')
   const template = newProject()
@@ -535,8 +540,8 @@ export function parseProject(text: string): Project {
     if (!c.id || ids.has(c.id) || c.id === '0' || c.id === '1' || c.id.startsWith('edge-')) throw new Error('Every component must have a unique, non-empty, non-reserved ID.')
     ids.add(c.id)
     if (c.credentialRef && !/^(keyvault|secret-ref):\/\/[^\s]+$/.test(c.credentialRef)) throw new Error('Credentials must be keyvault:// or secret-ref:// references.')
-    if (c.product === 'ome' && c.hosting === 'physical') throw new Error('OME requires supported appliance hosting, not a physical Windows installation.')
-    if (c.product === 'ome' && c.hostingDetails.installProduct) throw new Error('OME appliance installation remains manual.')
+    if (c.product === 'ome' && c.hosting === 'physical') throw new Error('A hardware management appliance requires supported appliance hosting, not a physical Windows installation.')
+    if (c.product === 'ome' && c.hostingDetails.installProduct) throw new Error('Hardware management appliance installation remains manual.')
   }
   if (/(?:-----BEGIN [A-Z ]*PRIVATE KEY-----|(?:password|passwd|token|client_secret|connection_string)\s*[:=]\s*(?!keyvault:\/\/|secret-ref:\/\/)[^\s"]+)/i.test(text)) throw new Error('Remove secret literals. Use runtime secret references only.')
   return project

@@ -55,7 +55,7 @@ export function licenseDependencyPlan(project:Project){
     const license=item(row),category=value(row,'category'),target=value(row,'target')
     const expected:Record<string,string[]>={ome:['ome'],vmware:['vmware'],backup:['backup'],sdn:['windows','other'],other:['other','vmware','backup','ome']}
     if(license&&!expected[category]?.includes(value(license,'product')))add('PRODUCT',row,'license','The license product must match this dependency category; host/guest Windows OS coverage is separate from appliance/plugin coverage.')
-    if(category==='ome'&&!project.components.some(c=>c.id===target&&c.product==='ome'))add('OME_TARGET',row,'target','Select the OME appliance using this feature; record its covered device inventory in the allocation evidence.')
+    if(category==='ome'&&!project.components.some(c=>c.id===target&&c.product==='ome'))add('OME_TARGET',row,'target','Select the hardware management appliance using this feature; record its covered device inventory in the allocation evidence.')
     if(category==='sdn'&&license&&value(license,'product')==='windows'){
       const direct=project.design.licenseAssignments.some(a=>value(a,'license')===license.id&&(value(a,'host')===target||value(a,'vm')===target))
       const mapped=project.design.licenseCoverage.some(c=>value(c,'license')===license.id&&value(c,'target')===target)

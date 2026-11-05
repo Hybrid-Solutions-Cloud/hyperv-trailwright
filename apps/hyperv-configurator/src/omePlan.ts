@@ -1,6 +1,7 @@
 import type {Component,Project} from './project'
 import type {Finding} from './validation'
-import {omePlugins,omeMilestones} from './omeFields'
+import {omePlugins,omeMilestones,DELL_OME} from './omeFields'
+import {hardwareManagers} from './vendorPlatforms'
 import {releaseLabel,SUPPORT_SOURCES} from './supportCatalog'
 import {ipv4,cidr,dnsOrIpv4} from './networkAddress'
 import {validTime} from './discoveryContract'
@@ -30,17 +31,20 @@ export function omeDiscoveryTargets(value:string){
   return {entries,addressCount:errors.length?null:count,dnsNames:names.size,errors}
 }
 export function omeAppliancePlan(c:Component,now=Date.now()){
-  const v=c.productDetails,findings:Finding[]=[],name=c.name||'OME'
+  const v=c.productDetails,findings:Finding[]=[],name=c.name||'Hardware management appliance'
   const add=(code:string,message:string,key:string,severity:Finding['severity']='error')=>findings.push({code,section:'products',recordId:c.id,fieldKey:key,severity,message:name+': '+message})
-  const profile=String(v.sizingProfile||''),known=releaseLabel(c.version,'4.7')&&['small','large','extraLarge'].includes(profile)
+  const platform=String(v.platform||''),dell=platform===DELL_OME
+  if(!platform)add('HWM_PLATFORM','Choose the hardware management platform.','platform')
+  if(platform==='other'&&!String(v.platformName||'').trim())add('HWM_PLATFORM_NAME','Name the hardware management product and vendor.','platformName')
+  const profile=dell?String(v.sizingProfile||''):'',known=dell&&releaseLabel(c.version,'4.7')&&['small','large','extraLarge'].includes(profile)
   const plugins=omePlugins.map(p=>({...p,state:String(v['plugin_'+p.key]||''),selectedVersion:String(v['pluginVersion_'+p.key]||'')}))
   const enabled=plugins.filter(p=>p.state==='enabled'),unanswered=plugins.filter(p=>!p.state)
   if(!Number.isInteger(c.ome.devices)||c.ome.devices<1)add('OME_DEVICES','Enter a positive whole managed-device count.','sizingProfile')
-  if(!profile)add('OME_SIZING_PROFILE','Choose a reviewed sizing profile.','sizingProfile')
+  if(dell&&!profile)add('OME_SIZING_PROFILE','Choose a reviewed sizing profile.','sizingProfile')
   if(profile&&profile!=='manual'&&!known)add('OME_RELEASE','The built-in sizing profiles apply only to an explicit 4.7 release; choose independent sizing for other releases.','sizingProfile')
-  if(!v.sizingEvidence)add('OME_SIZING_EVIDENCE','Record release-specific sizing and growth review.','sizingEvidence',profile==='manual'?'error':'warning')
-  if(unanswered.length)add('OME_PLUGIN_SELECTION','Review every plug-in, including the default Services and AIOps plug-ins.','plugin_'+unanswered[0].key)
-  for(const p of enabled){if(!p.selectedVersion)add('OME_PLUGIN_VERSION','Pin the '+p.label+' version.','pluginVersion_'+p.key);else if(known&&p.selectedVersion!==p.version)add('OME_PLUGIN_VERSION','The reviewed 4.7 catalog lists '+p.label+' '+p.version+'; review the selected version independently.','pluginVersion_'+p.key)}
+  if(!v.sizingEvidence)add('OME_SIZING_EVIDENCE','Record release-specific sizing and growth review.','sizingEvidence',!dell||profile==='manual'?'error':'warning')
+  if(dell&&unanswered.length)add('OME_PLUGIN_SELECTION','Review every plug-in, including the default Services and AIOps plug-ins.','plugin_'+unanswered[0].key)
+  if(dell)for(const p of enabled){if(!p.selectedVersion)add('OME_PLUGIN_VERSION','Pin the '+p.label+' version.','pluginVersion_'+p.key);else if(known&&p.selectedVersion!==p.version)add('OME_PLUGIN_VERSION','The reviewed 4.7 catalog lists '+p.label+' '+p.version+'; review the selected version independently.','pluginVersion_'+p.key)}
   if(known&&((profile==='small'&&c.ome.devices>=1000)||(profile==='large'&&(c.ome.devices<1000||c.ome.devices>8000))||(profile==='extraLarge'&&c.ome.devices>25000)))add('OME_PROFILE_LIMIT','Device count is outside the selected profile.','sizingProfile')
   if(profile==='extraLarge'&&enabled.length)add('OME_XL_PLUGINS','Extra-large capacity excludes all plug-ins.','plugin_'+enabled[0].key)
   if(profile==='extraLarge'&&c.ome.devices<25000)add('OME_XL_REVIEW','Confirm the extra-large profile for this device count with the release-specific deployment guide.','sizingEvidence','warning')
@@ -54,9 +58,9 @@ export function omeAppliancePlan(c:Component,now=Date.now()){
     if(c.vCpu<required.vCpu||c.memoryGiB<required.memoryGiB)add('OME_COMPUTE','Entered compute is below the reviewed requirement: '+required.vCpu+' vCPU and '+required.memoryGiB+' GiB.','capacityUnits')
     if(Number(v.primaryDiskGiB)<required.primaryDiskGiB||Number(v.secondaryDiskGiB)<required.secondaryDiskGiB)add('OME_DISKS','Record both virtual disks at or above the reviewed minimum.','primaryDiskGiB')
   }
-  if(!Number(v.primaryDiskGiB)||(!Number(v.secondaryDiskGiB)&&profile!=='manual'))add('OME_DISKS','Record primary and secondary disk sizes; external platform exceptions require independent review.','primaryDiskGiB')
-  if(c.diskGiB!==Number(v.primaryDiskGiB)+Number(v.secondaryDiskGiB))add('OME_DISK_TOTAL','Component disk capacity must equal the two recorded virtual disks; reserve datastore overhead separately.','primaryDiskGiB')
-  if(profile!=='extraLarge'&&Number(v.primaryDiskGiB)!==Number(v.secondaryDiskGiB))add('OME_DISK_PAIR','The generic appliance requires equal-capacity disks; document a release/platform exception using independent sizing.','secondaryDiskGiB',profile==='manual'?'warning':'error')
+  if(dell&&(!Number(v.primaryDiskGiB)||(!Number(v.secondaryDiskGiB)&&profile!=='manual')))add('OME_DISKS','Record primary and secondary disk sizes; external platform exceptions require independent review.','primaryDiskGiB')
+  if(dell&&c.diskGiB!==Number(v.primaryDiskGiB)+Number(v.secondaryDiskGiB))add('OME_DISK_TOTAL','Component disk capacity must equal the two recorded virtual disks; reserve datastore overhead separately.','primaryDiskGiB')
+  if(dell&&profile!=='extraLarge'&&Number(v.primaryDiskGiB)!==Number(v.secondaryDiskGiB))add('OME_DISK_PAIR','The generic appliance requires equal-capacity disks; document a release/platform exception using independent sizing.','secondaryDiskGiB',profile==='manual'?'warning':'error')
   const targets=omeDiscoveryTargets(String(v.idracTargets||''))
   if(!targets.entries.length)add('OME_DISCOVERY_TARGETS','Supply the explicit discovery addresses or bounded ranges for the operator.','idracTargets')
   for(const error of targets.errors)add('OME_DISCOVERY_TARGETS',error,'idracTargets')
@@ -68,6 +72,6 @@ export function omeAppliancePlan(c:Component,now=Date.now()){
     if(state==='reported'&&(!validTime(observedAt)||Date.parse(observedAt)>now))add('OME_CHECKLIST_TIME','Provide a valid, non-future UTC observation for '+label+'.','manualAt_'+key)
     return {key,label,state:state||'unanswered',owner,evidence,observedAt,verification:'operator-reported; not independently verified'}
   })
-  return {componentId:c.id,name,lifecycle:c.lifecycle,hosting:c.hosting,installation:'manual',runtimeQualified:false,profile,vendor,required,allocated:{vCpu:c.vCpu,memoryGiB:c.memoryGiB,diskGiB:c.diskGiB,primaryDiskGiB:Number(v.primaryDiskGiB)||0,secondaryDiskGiB:Number(v.secondaryDiskGiB)||0},plugins,targets,milestones,findings}
+  return {componentId:c.id,name,platform:platform||'unanswered',platformLabel:platform==='other'?String(v.platformName||''):hardwareManagers[platform]?.label??'',sizingCatalog:dell?'dell-ome-4.7':'vendor-review',lifecycle:c.lifecycle,hosting:c.hosting,installation:'manual',runtimeQualified:false,profile,vendor,required,allocated:{vCpu:c.vCpu,memoryGiB:c.memoryGiB,diskGiB:c.diskGiB,primaryDiskGiB:Number(v.primaryDiskGiB)||0,secondaryDiskGiB:Number(v.secondaryDiskGiB)||0},plugins:dell?plugins:[],targets,milestones,findings}
 }
 export function omePlan(project:Project){return {kind:'hyperv-ome-manual-plan',version:'0.1.0',projectId:project.id,revision:project.revision,catalog:OME_CATALOG,meaning:'Planning and operator observations only. No appliance deployment, discovery, entitlement activation or runtime acceptance occurs here.',appliances:project.components.filter(c=>c.product==='ome').map(c=>omeAppliancePlan(c))}}

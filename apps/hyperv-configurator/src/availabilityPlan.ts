@@ -45,7 +45,7 @@ export function availabilityPlan(project:Project){
       for(const other of project.design.availabilityGroups.filter(g=>g.id!==group.id&&['sqlfci','sqlag'].includes(String(g.values.strategy))))if(norm(v.serviceClusterIdentity)&&norm(v.serviceClusterIdentity)===norm(other.values.serviceClusterIdentity))add('VMM_HA_DATABASE_CLUSTER','VMM and its SQL service must not share the same application cluster identity.','serviceClusterIdentity')
     }
     if(v.product==='wac'&&localStrategy&&new Set(workers.map(r=>r.component.productDetails.mode)).size>1)add('WAC_HA_MODES','Different WAC modes do not form an application HA pair.','strategy')
-    if(workers.some(r=>r.component.product==='ome')&&localStrategy)add('OME_APPLICATION_HA_REVIEW','OME appliance backup/rebuild and provider restart require their own review; component duplication does not establish appliance application HA.','strategy','warning')
+    if(workers.some(r=>r.component.product==='ome')&&localStrategy)add('OME_APPLICATION_HA_REVIEW','Hardware management appliance backup/rebuild and provider restart require their own review; component duplication does not establish appliance application HA.','strategy','warning')
     let voting:{status:'not-applicable'|'unknown'|'insufficient'|'consistent';totalVotes:number|null;requiredVotes:number|null;worstRemainingVotes:number|null;worstRemainingWorkers:number|null;assumptions:string[]}={status:'not-applicable',totalVotes:null,requiredVotes:null,worstRemainingVotes:null,worstRemainingWorkers:null,assumptions:[]}
     if(v.strategy==='resourcepool'){
       let known=unique&&resolved.length===links.length&&workers.length>0

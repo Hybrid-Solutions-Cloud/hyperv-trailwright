@@ -13,7 +13,7 @@ test('network controls resolve host QoS overcommit and preserve shared exports',
  const smb=page.locator('[data-record-id="smb-1"]');if(await smb.getAttribute('open')===null)await smb.locator('summary').click();await smb.getByLabel('ETS bandwidth reservation (%)',{exact:true}).fill('50')
  const budget=page.getByRole('region',{name:'Host QoS budget',exact:true});await expect(budget.getByRole('row').filter({hasText:'host-net-1'})).toContainText('100')
  await nav.getByRole('button',{name:/Review and exports/}).click();await expect(page.getByRole('button',{name:'Unique host traffic-class ETS reservations exceed 100 percent.',exact:true})).toHaveCount(0)
- const saveEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Download project',exact:true}).click();const saved=await readFile((await(await saveEvent).path())!,'utf8');expect(JSON.parse(saved).schemaVersion).toBe(32)
+ const saveEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Download project',exact:true}).click();const saved=await readFile((await(await saveEvent).path())!,'utf8');expect(JSON.parse(saved).schemaVersion).toBe(33)
  await page.locator('input[type=file]').first().setInputFiles({name:'reopened-controls.json',mimeType:'application/json',buffer:Buffer.from(saved)});await nav.getByRole('button',{name:/Networking and IP plan/}).click()
  await expect(smb.getByLabel('ETS bandwidth reservation (%)',{exact:true})).toHaveValue('50')
  await page.setViewportSize({width:390,height:844});await budget.scrollIntoViewIfNeeded();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);await page.screenshot({path:info.outputPath('network-controls-mobile.png')})

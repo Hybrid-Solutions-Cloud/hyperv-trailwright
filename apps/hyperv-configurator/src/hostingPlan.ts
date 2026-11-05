@@ -14,7 +14,7 @@ export function hostingPlan(project:Project){
     const require=(key:string,message?:string)=>{if(!String(h[key]||'').trim())add('HOSTING_CONTRACT',name+': '+(message||'Record '+(hostingContractFields.find(f=>f.key===key)?.label||key)+'.'),c.id,key,'hosting',changing?'error':'warning')}
     for(const a of actions)if(a.selected&&!a.assignedOwner.trim())require(a.owner,'Assign the owner of '+a.label+'.')
     if(c.lifecycle==='preserve'&&changing)add('HOSTING_PRESERVE',name+': Use existing preserves the resource. Choose Configure existing before selecting a configuration action.',c.id,'lifecycle','management')
-    if(c.product==='ome'&&actions.some(a=>a.selected&&a.key!=='integrateProduct'))add('OME_MANUAL_HOSTING',name+': OME import, first boot and appliance installation remain manual; infrastructure/Windows guest/product creation flags cannot authorize them.',c.id,'infrastructureOwner')
+    if(c.product==='ome'&&actions.some(a=>a.selected&&a.key!=='integrateProduct'))add('OME_MANUAL_HOSTING',name+': hardware management appliance import, first boot and installation remain manual; infrastructure/Windows guest/product creation flags cannot authorize them.',c.id,'infrastructureOwner')
     if(c.hosting==='external'){
       require('externalContract')
       if(actions.some(a=>a.selected&&a.key!=='integrateProduct'))add('EXTERNAL_SERVICE_ACTION',name+': An external service contract cannot create its VM, configure its guest OS or install its product.',c.id,'externalContract')

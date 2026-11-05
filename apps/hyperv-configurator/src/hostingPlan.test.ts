@@ -42,7 +42,7 @@ it('rejects reserved addresses, wrong gateways and changes beneath preserved com
 it('migrates actual schema 13 without inventing identities, owners or network attachments',()=>{
   const project=newProject(),c=newComponent('wac');project.components.push(c);c.hostingDetails.configureGuest=true
   const old:any=structuredClone(project);old.schemaVersion=13;expect(()=>parseProject(JSON.stringify(old))).toThrow('Schema 13')
-  removeHostingV14(old);const next=parseProject(JSON.stringify(old));expect(next.schemaVersion).toBe(32);expect(next.components[0].hostingDetails.configureGuest).toBe(true);expect(next.components[0].hostingDetails.resourceId).toBe('');expect(next.design.managementNetworks).toEqual([])
+  removeHostingV14(old);const next=parseProject(JSON.stringify(old));expect(next.schemaVersion).toBe(33);expect(next.components[0].hostingDetails.configureGuest).toBe(true);expect(next.components[0].hostingDetails.resourceId).toBe('');expect(next.design.managementNetworks).toEqual([])
   old.components[0].hostingDetails.guestOwner='Invented';expect(()=>parseProject(JSON.stringify(old))).toThrow('Schema 13')
 })
 it('adds omitted component categories only by explicit selection and retains them in capacity and exports',()=>{

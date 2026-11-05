@@ -120,9 +120,9 @@ function ComponentEditor({ component: c, project, section, change, remove }: { c
         <details open><summary>Resource identity, provider contract and owners</summary><Fields fields={hostingContractFields.filter(f=>!f.key.startsWith('physical')||c.hosting==='physical')} values={c.hostingDetails} project={project} prefix={`${c.id}-hosting`} onChange={v=>set('hostingDetails',v)}/></details>
       </>}
       {section === 'products' && <>
-        {c.product === 'ome' && <><p className="notice">OME is a manually deployed appliance. Its resources count in this design; appliance installation is an operator task.</p>
+        {c.product === 'ome' && <><p className="notice">The hardware management appliance (Dell OpenManage Enterprise, HPE OneView, Lenovo XClarity Administrator or another product) is deployed manually. Its resources count in this design; appliance installation is an operator task.</p>
           <div className="fields"><Label title="Managed device count"><input type="number" min={0} value={c.ome.devices} onChange={e => set('ome', { ...c.ome, devices: Number(e.target.value) })} /></Label>
-            {Object.entries({ plugins: 'Plugins', discoveryScope: 'Device / iDRAC discovery scope', firmwareCatalog: 'Firmware catalog / baseline', integrations: 'Integrations and owners', entitlement: 'License / plugin entitlement', manualSteps: 'Manual deployment and acceptance steps' }).map(([key, label]) => <Label key={key} title={label}><textarea rows={3} maxLength={16000} value={String(c.ome[key as keyof Component['ome']])} onChange={e => set('ome', { ...c.ome, [key]: e.target.value })} /></Label>)}
+            {Object.entries({ plugins: 'Plugins', discoveryScope: 'Device / BMC discovery scope', firmwareCatalog: 'Firmware catalog / baseline', integrations: 'Integrations and owners', entitlement: 'License / plugin entitlement', manualSteps: 'Manual deployment and acceptance steps' }).map(([key, label]) => <Label key={key} title={label}><textarea rows={3} maxLength={16000} value={String(c.ome[key as keyof Component['ome']])} onChange={e => set('ome', { ...c.ome, [key]: e.target.value })} /></Label>)}
           </div>
         </>}
         {c.product==='ome'?<>

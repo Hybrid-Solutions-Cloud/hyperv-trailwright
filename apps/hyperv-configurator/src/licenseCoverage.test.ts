@@ -111,7 +111,7 @@ describe('resource, managed estate and supporting SQL licensing',()=>{
     const {project,sqlLicense}=licenseCoverageFixture(),old:any=structuredClone(project);old.schemaVersion=28
     expect(()=>parseProject(JSON.stringify(old))).toThrow(/Schema 28/)
     removeLicenseCoverageV29(old);const migrated=parseProject(JSON.stringify(old))
-    expect(migrated.schemaVersion).toBe(32);expect(migrated.design.licenses).toEqual(project.design.licenses)
+    expect(migrated.schemaVersion).toBe(33);expect(migrated.design.licenses).toEqual(project.design.licenses)
     expect(migrated.design.sqlLicenseUses).toEqual([]);expect(row(migrated,sqlLicense.id).purchaseUnits).toBeNull()
   })
   it('round-trips active coverage, reports one shared plan and removes sensitive evidence for sharing',()=>{
@@ -132,7 +132,7 @@ describe('resource, managed estate and supporting SQL licensing',()=>{
     const observed=importSdnEvidence(project,JSON.stringify(evidence),'example-observation.json',now)
     const old:any=structuredClone(observed);old.schemaVersion=27;removeLicensingRightsV28(old)
     const migrated=parseProject(JSON.stringify(old))
-    expect(migrated.schemaVersion).toBe(32);expect(migrated.sdnEvidence).toEqual(observed.sdnEvidence)
+    expect(migrated.schemaVersion).toBe(33);expect(migrated.sdnEvidence).toEqual(observed.sdnEvidence)
     expect(sdnEvidenceAssessment(migrated,now)).toMatchObject({status:'passed-observation',runtimeQualified:false,executionAllowed:false})
   })
 })

@@ -58,7 +58,7 @@ describe('discovery import and provenance',()=>{
     const {project}=discoveryFixture(),legacy:any=structuredClone(project);removeStorageV7(legacy);legacy.schemaVersion=3
     expect(()=>parseProject(JSON.stringify(legacy))).toThrow('Schema 3')
     delete legacy.discovery
-    const next=parseProject(JSON.stringify(legacy));expect(next.schemaVersion).toBe(32);expect(next.components).toEqual(project.components);expect(next.discovery).toEqual({snapshots:[],reviews:[]})
+    const next=parseProject(JSON.stringify(legacy));expect(next.schemaVersion).toBe(33);expect(next.components).toEqual(project.components);expect(next.discovery).toEqual({snapshots:[],reviews:[]})
   })
 })
 describe('drift and local design review',()=>{
