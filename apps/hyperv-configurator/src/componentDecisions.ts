@@ -8,11 +8,11 @@ const answer=(project:Project,key:DecisionGate)=>String(project.decisions?.[key]
 /** Whether a component is in use. An unanswered gate is not in use for exports; its questions stay visible until answered. */
 export function componentUsed(project:Project,component:'firewall'|'s2sVpn'|'p2sVpn'|'expressRoute'|'tor'|'oob'|'consoleServer'|'oobNetwork'|'backup'|'monitoring'):boolean{
   switch(component){
-    case 'firewall':return FIREWALL.includes(answer(project,'firewallProvider'))
+    case 'firewall':return FIREWALL.includes(answer(project,'firewallInScope'))
     case 's2sVpn':return answer(project,'siteToSiteVpn')==='yes'
     case 'p2sVpn':return answer(project,'pointToSiteVpn')==='yes'
     case 'expressRoute':return answer(project,'expressRoute')==='yes'
-    case 'tor':return TOR.includes(answer(project,'torProvider'))
+    case 'tor':return TOR.includes(answer(project,'torInScope'))
     case 'oob':return answer(project,'oobSwitch')==='yes'
     case 'consoleServer':return answer(project,'consoleServer')==='yes'
     case 'oobNetwork':return answer(project,'oobSwitch')==='yes'||answer(project,'consoleServer')==='yes'
@@ -45,9 +45,9 @@ export function decisionRecord(project:Project){
   const gate=(key:DecisionGate,used:boolean):{answer:string|null;used:boolean}=>key in d?{answer:s(d[key])||'unanswered',used}:{answer:null,used:false}
   return {
     management_plane:{answer:project.scope,management_source:project.context.managementSource||'unanswered',used:project.scope!=='cluster'},
-    firewall:gate('firewallProvider',componentUsed(project,'firewall')),
+    firewall:gate('firewallInScope',componentUsed(project,'firewall')),
     site_to_site_vpn:gate('siteToSiteVpn',componentUsed(project,'s2sVpn')),point_to_site_vpn:gate('pointToSiteVpn',componentUsed(project,'p2sVpn')),expressroute:gate('expressRoute',componentUsed(project,'expressRoute')),
-    tor_switches:gate('torProvider',componentUsed(project,'tor')),out_of_band_management:gate('oobSwitch',componentUsed(project,'oob')),console_server:gate('consoleServer',componentUsed(project,'consoleServer')),
+    tor_switches:gate('torInScope',componentUsed(project,'tor')),out_of_band_management:gate('oobSwitch',componentUsed(project,'oob')),console_server:gate('consoleServer',componentUsed(project,'consoleServer')),
     storage:rows('storageSystems').map(r=>({system:s(r.values.name)||r.id,answer:s(r.values.kind)||'unanswered',connectivity:r.values.kind==='s2d'?s(r.values.storageConnectivity)||'unanswered':undefined,used:true})),
     sdn:{answer:project.sdn.scope,used:project.sdn.scope!=='none'},
     cluster_witness:rows('clusters').map(r=>({cluster:s(r.values.name)||r.id,answer:s(r.values.witness)||'unanswered',used:['file','cloud','disk'].includes(s(r.values.witness))})),

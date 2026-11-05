@@ -96,7 +96,7 @@ describe('physical storage and SAN readiness',()=>{
   it('migrates schema19 without fabricating observations, hardware compatibility or initiator links',()=>{
     const {project}=storageFixture(),old:any=structuredClone(project);old.schemaVersion=19
     expect(()=>parseProject(JSON.stringify(old))).toThrow('Schema 19');removeStorageReadinessV20(old)
-    const migrated=parseProject(JSON.stringify(old));expect(migrated.schemaVersion).toBe(33);expect(migrated.design.storageInterfaces).toEqual([])
+    const migrated=parseProject(JSON.stringify(old));expect(migrated.schemaVersion).toBe(34);expect(migrated.design.storageInterfaces).toEqual([])
     expect(migrated.design.disks[0].values).toMatchObject({bus:'',presentation:'',evidence:''})
     old.design.disks[0].values.bus='sata';expect(()=>parseProject(JSON.stringify(old))).toThrow('Schema 19')
   })

@@ -25,20 +25,18 @@ describe('component decision gates',()=>{
   it('starts every gate unanswered, shows only the gate questions and requires an answer',()=>{
     const p=newProject()
     expect(Object.keys(decisionGates).map(key=>p.decisions[key])).toEqual(Array(9).fill(''))
-    expect(keys(p,'network')).toEqual(['firewallProvider','siteToSiteVpn','pointToSiteVpn','expressRoute','torProvider','oobSwitch','consoleServer'])
+    expect(keys(p,'network')).toEqual(['firewallInScope','siteToSiteVpn','pointToSiteVpn','expressRoute','torInScope','oobSwitch','consoleServer'])
     expect(keys(p,'operations')).toEqual(['backupInScope','monitoringInScope'])
     expect(decisionFindings(p).filter(f=>f.code==='COMPONENT_DECISION').map(f=>f.fieldKey)).toEqual(Object.keys(decisionGates))
-    expect(validate(p).some(f=>f.code==='COMPONENT_DECISION'&&f.fieldKey==='firewallProvider'&&f.severity==='error')).toBe(true)
+    expect(validate(p).some(f=>f.code==='COMPONENT_DECISION'&&f.fieldKey==='firewallInScope'&&f.severity==='error')).toBe(true)
   })
 
   const gates:[string,string,string,string,string[],Answers?][]=[
-    ['firewallProvider','provider','none','fwModel',['firewallDevices','firewallInterfaces','firewallGateways']],
-    ['firewallProvider','customer','none','fwModel',['firewallDevices','firewallInterfaces','firewallGateways']],
+    ['firewallInScope','yes','no','fwModel',['firewallDevices','firewallInterfaces','firewallGateways']],
     ['siteToSiteVpn','yes','no','vpnOnPremPublicIp',[]],
     ['pointToSiteVpn','yes','no','p2sAddressPool',[]],
     ['expressRoute','yes','no','erProvider',[]],
-    ['torProvider','provider','none','torModel',['torSwitches']],
-    ['torProvider','customer','none','torModel',['torSwitches']],
+    ['torInScope','yes','no','torModel',['torSwitches']],
     ['oobSwitch','yes','no','oobSwitchOsVersion',['oobDevices']],
     ['consoleServer','yes','no','consoleManagementProduct',['consoleServers','consolePorts'],{consoleManagement:'existing'}],
     ['backupInScope','yes','no','backupProductName',[]],
@@ -83,7 +81,7 @@ describe('component decision gates',()=>{
     expect(environmentFiles(p)['environment/networking.yml']).not.toContain('ethernet1/1/5')
     expect(environmentFiles(p)['environment/hardware.yml']).not.toContain('og-port-7')
     expect(last(roundTrip(p).design.adapters).values.torPort).toBe('ethernet1/1/5')
-    p.decisions.torProvider='customer';p.decisions.oobSwitch='yes'
+    p.decisions.torInScope='yes';p.decisions.oobSwitch='yes'
     expect(visible(p,'adapters',nic.values)).toContain('torSwitch')
     expect(visible(p,'hosts',host.values)).toEqual(expect.arrayContaining(['bmcOobDevice','bmcOobPort']))
     expect(environmentFiles(p)['environment/networking.yml']).toContain('ethernet1/1/5')
@@ -102,7 +100,7 @@ describe('component decision gates',()=>{
   })
 
   it('shows ToR DCB questions only when S2D storage traffic is switched',()=>{
-    const p=demoProject(1);p.decisions.torProvider='provider'
+    const p=demoProject(1);p.decisions.torInScope='yes'
     const dcb=['torStorageVlans','torRdma','torSmbPriority','torClusterPriority','torEtsSmbPercent','torEtsClusterPercent']
     expect(keys(p,'network')).not.toEqual(expect.arrayContaining(['torSmbPriority']))
     const s2d=add(p,'storageSystems',{name:'s2d',cluster:p.design.clusters[0].id,kind:'s2d',storageConnectivity:'switchless'})
@@ -178,7 +176,7 @@ describe('cheap gate fixes and schema 31',()=>{
     const p=demoProject(1),old=JSON.parse(serializeProject(p))
     removeNetworkDecisionsV31(old);old.schemaVersion=30
     const next=parseProject(JSON.stringify(old))
-    expect(next.schemaVersion).toBe(33)
+    expect(next.schemaVersion).toBe(34)
     expect(next.decisions).toEqual(newProject().decisions)
     for(const key of ['firewallDevices','firewallInterfaces','firewallGateways','torSwitches','oobDevices','consoleServers','consolePorts'])expect(next.design[key]).toEqual([])
     expect(next.design.storageSystems[0].values).toMatchObject({kind:'fc',storageConnectivity:'',fcFabricA:''})
@@ -208,7 +206,7 @@ describe('cheap gate fixes and schema 31',()=>{
     old.decisions={...p.decisions,firewallProvider:'customer',customerFirewallVendor:'Example vendor X100',customerFirewallOwner:'Example owner',customerFirewallGatewayIps:'192.0.2.1',fwVdoms:'root',
       torProvider:'dell-powerswitch',torOs:'sonic',torPairMode:'vlt',torVltDomain:'7',oobModel:'opengear',lighthouseInstance:'existing',lighthouseAddress:'lh.example.test',lighthouseEnrollmentAuthRef:'keyvault://example/lh',
       monitoringInScope:'yes',monitoringPlatform:'retired-noc-option'}
-    for(const key of ['firewallPlatform','firewallVendor','firewallOwner','fwVirtualContexts','fwGatewayIps','torPlatform','torPairDomain','oobSwitch','oobSwitchPlatform','oobSwitchVendor','oobSwitchOsVersion','consoleServer','consoleServerPlatform','consoleServerVendor','consoleManagement','consoleManagementProduct','consoleManagementAddress','consoleManagementPort','consoleEnrollmentRef','consoleEnrollmentBundle'])delete old.decisions[key]
+    for(const key of ['firewallInScope','torInScope','firewallPlatform','firewallVendor','fwVirtualContexts','fwGatewayIps','torPlatform','torPairDomain','oobSwitch','oobSwitchPlatform','oobSwitchVendor','oobSwitchOsVersion','consoleServer','consoleServerPlatform','consoleServerVendor','consoleManagement','consoleManagementProduct','consoleManagementAddress','consoleManagementPort','consoleEnrollmentRef','consoleEnrollmentBundle'])delete old.decisions[key]
     delete old.design.consoleServers
     old.design.oobDevices=[{id:'og-1',values:{name:'og-1',owner:'',vendor:'',model:'OM1208',managementIp:'192.0.2.3',vlan:0,uplink:'',serial:'',rack:'',serialPortCount:8,cellularFailover:'none',cellularApn:''}}]
     old.design.consolePorts=[{id:'cp-1',values:{...values('consolePorts'),name:'switch console',consoleServer:'og-1'}}]
@@ -216,11 +214,11 @@ describe('cheap gate fixes and schema 31',()=>{
     delete host.values.hardwarePlatform;host.values.vendor='Dell Inc.';host.values.bmcOobDevice='og-1'
     const ome=JSON.parse(JSON.stringify(newComponent('ome')));delete ome.productDetails.platform;delete ome.productDetails.platformName;old.components.push(ome)
     const next=parseProject(JSON.stringify(old))
-    expect(next.schemaVersion).toBe(33)
-    expect(next.decisions).toMatchObject({firewallProvider:'customer',firewallPlatform:'other',firewallVendor:'Example vendor X100',firewallOwner:'Example owner',fwGatewayIps:'192.0.2.1',fwVirtualContexts:'root',
-      torProvider:'provider',torPlatform:'dell-sonic',torPairMode:'mlag',torPairDomain:'7',oobSwitch:'',consoleServer:'yes',consoleServerPlatform:'opengear',
+    expect(next.schemaVersion).toBe(34)
+    expect(next.decisions).toMatchObject({firewallInScope:'yes',firewallPlatform:'other',firewallVendor:'Example vendor X100',fwGatewayIps:'192.0.2.1',fwVirtualContexts:'root',
+      torInScope:'yes',torPlatform:'dell-sonic',torPairMode:'mlag',torPairDomain:'7',oobSwitch:'',consoleServer:'yes',consoleServerPlatform:'opengear',
       consoleManagement:'existing',consoleManagementProduct:'Opengear Lighthouse',consoleManagementAddress:'lh.example.test',consoleEnrollmentRef:'keyvault://example/lh',monitoringPlatform:''})
-    expect(next.decisions).not.toHaveProperty('oobModel')
+    for(const gone of ['oobModel','firewallProvider','torProvider','firewallOwner','torOwner','customerFirewallOwner'])expect(next.decisions).not.toHaveProperty(gone)
     expect(next.design.oobDevices).toEqual([])
     expect(next.design.consoleServers).toEqual([{id:'og-1',values:expect.objectContaining({name:'og-1',model:'OM1208',serialPortCount:8,managementIp:'192.0.2.3'})}])
     expect(next.design.consolePorts[0].values.consoleServer).toBe('og-1')
@@ -229,8 +227,21 @@ describe('cheap gate fixes and schema 31',()=>{
     expect(next.components.find(c=>c.id===ome.id)?.productDetails).toMatchObject({platform:'dell-ome',platformName:''})
     old.decisions.firewallProvider='retired-managed-option';old.decisions.oobModel='oob-switch'
     const reset=parseProject(JSON.stringify(old))
-    expect(reset.decisions).toMatchObject({firewallProvider:'',oobSwitch:'yes',consoleServer:'no'})
+    expect(reset.decisions).toMatchObject({firewallInScope:'',oobSwitch:'yes',consoleServer:'no'})
     expect(reset.design.oobDevices.map(r=>r.id)).toEqual(['og-1'])
     expect(reset.design.consolePorts[0].values.consoleServer).toBe('')
+  })
+
+  it('migrates schema 33 provider and customer gates to used / not-used and drops owner answers',()=>{
+    const p=demoProject(1),old=JSON.parse(serializeProject(p))
+    old.schemaVersion=33
+    const {firewallInScope:_f,torInScope:_t,...rest}=old.decisions
+    old.decisions={...rest,firewallProvider:'customer',firewallOwner:'Example owner',torProvider:'provider',torOwner:'Example owner',monitoringInScope:'yes',monitoringPlatform:'provider-noc'}
+    const next=parseProject(JSON.stringify(old))
+    expect(next.schemaVersion).toBe(34)
+    expect(next.decisions).toMatchObject({firewallInScope:'yes',torInScope:'yes',monitoringPlatform:''})
+    for(const gone of ['firewallProvider','torProvider','firewallOwner','torOwner'])expect(next.decisions).not.toHaveProperty(gone)
+    old.decisions.firewallProvider='none';old.decisions.torProvider=''
+    expect(parseProject(JSON.stringify(old)).decisions).toMatchObject({firewallInScope:'no',torInScope:''})
   })
 })

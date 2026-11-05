@@ -82,7 +82,7 @@ describe('desired VMM profile handoff',()=>{
     expect(()=>parseProject(JSON.stringify(legacy))).toThrow('Schema 7')
     removeProfilesV8(legacy)
     const next=parseProject(JSON.stringify(legacy))
-    expect(next.schemaVersion).toBe(33);expect(next.id).toBe(project.id);expect(next.revision).toBe(project.revision)
+    expect(next.schemaVersion).toBe(34);expect(next.id).toBe(project.id);expect(next.revision).toBe(project.revision)
     for(const field of profileCreationFields)expect(next.design.profiles[0].values[field.key]).toBe('')
     expect(vmmProfilePlan(next).status).toBe('blocked')
     expect(new Set(collections.find(c=>c.key==='profiles')!.fields.map(f=>f.key)).size).toBe(collections.find(c=>c.key==='profiles')!.fields.length)

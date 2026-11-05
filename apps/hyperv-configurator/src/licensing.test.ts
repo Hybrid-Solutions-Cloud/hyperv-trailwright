@@ -102,7 +102,7 @@ describe('licensing assignment and commercial evidence',()=>{
     expect(()=>parseProject(JSON.stringify(legacy))).toThrow('Schema 8')
     removeLicensingV9(legacy)
     const next=parseProject(JSON.stringify(legacy))
-    expect(next.schemaVersion).toBe(33);expect(next.id).toBe(project.id);expect(next.revision).toBe(project.revision)
+    expect(next.schemaVersion).toBe(34);expect(next.id).toBe(project.id);expect(next.revision).toBe(project.revision)
     expect(next.design.licenses[0].values).toMatchObject({required:24,owned:8,calculationModel:'manual',quoteStatus:'review',entitlementId:''})
     expect(next.design.licenseAssignments).toEqual([]);expect(licenseSummary(next)[0].estimatedCost).toBeNull()
   })

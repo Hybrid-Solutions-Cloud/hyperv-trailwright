@@ -85,7 +85,7 @@ describe('access, Azure and feature dependency licensing',()=>{
   it('migrates schema29 without invented rights and includes dependencies in every shared contract',()=>{
     const {project}=licenseDependencyFixture(),old:any=structuredClone(project);old.schemaVersion=29
     expect(()=>parseProject(JSON.stringify(old))).toThrow(/Schema 29/);removeLicenseDependenciesV30(old)
-    const migrated=parseProject(JSON.stringify(old));expect(migrated.schemaVersion).toBe(33);expect(migrated.design.azureLicenseMeters).toEqual([])
+    const migrated=parseProject(JSON.stringify(old));expect(migrated.schemaVersion).toBe(34);expect(migrated.design.azureLicenseMeters).toEqual([])
     expect(migrated.design.licenses).toEqual(project.design.licenses)
     const files=environmentFiles(project);expect(files['environment/licensing.yml']).toContain('azureLicenseMeters:')
     expect(JSON.parse(files['plans/license-coverage.json']).objects.accessRights).toHaveLength(2)

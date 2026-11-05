@@ -21,7 +21,7 @@ test('access, metered service benefits and shared feature entitlements remain ex
   await audience.getByLabel('Stable audience / server scope identifier *',{exact:true}).fill('EXAMPLE changed audience');await expect(rds).toContainText('Review rights / quantity')
   await audience.getByLabel('Stable audience / server scope identifier *',{exact:true}).fill('EXAMPLE operators');await expect(rds).toContainText('USD 70')
   const savedEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Download project',exact:true}).click()
-  const saved=await readFile((await(await savedEvent).path())!,'utf8');expect(JSON.parse(saved).schemaVersion).toBe(33)
+  const saved=await readFile((await(await savedEvent).path())!,'utf8');expect(JSON.parse(saved).schemaVersion).toBe(34)
   await page.locator('input[type=file]').first().setInputFiles({name:'dependencies-reopened.json',mimeType:'application/json',buffer:Buffer.from(saved)})
   await expect(azure).toContainText('USD 30.75')
   await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true)

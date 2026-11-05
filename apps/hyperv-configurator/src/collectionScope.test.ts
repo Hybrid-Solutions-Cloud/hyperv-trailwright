@@ -43,11 +43,9 @@ describe('collection disclosure', () => {
     const applies = (key: string) => collectionApplies(collections.find(c => c.key === key)!, project)
     for (const key of networkDeviceKeys) project.design[key] = [record({ name: 'Retained ' + key })] as unknown as typeof project.design.sites
     for (const key of networkDeviceKeys) expect(applies(key), key).toBe(false)
-    for (const provider of ['provider', 'customer']) {
-      project.decisions.firewallProvider = provider
-      for (const key of ['firewallDevices', 'firewallInterfaces', 'firewallGateways']) expect(applies(key), `${provider} ${key}`).toBe(true)
-    }
-    project.decisions.torProvider = 'customer'; project.decisions.oobSwitch = 'yes'
+    project.decisions.firewallInScope = 'yes'
+    for (const key of ['firewallDevices', 'firewallInterfaces', 'firewallGateways']) expect(applies(key), key).toBe(true)
+    project.decisions.torInScope = 'yes'; project.decisions.oobSwitch = 'yes'
     for (const key of ['torSwitches', 'oobDevices']) expect(applies(key), key).toBe(true)
     expect(applies('consoleServers')).toBe(false); expect(applies('consolePorts')).toBe(false)
     project.decisions.consoleServer = 'yes'; project.decisions.oobSwitch = 'no'

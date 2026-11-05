@@ -4,9 +4,9 @@ import {consoleServerPlatforms,firewallPlatforms,platformOptions,switchPlatforms
  * Schema 31 component decisions. Every infrastructure component starts with an "is it used?" (or which-option)
  * gate. The gate reveals only the follow-up questions that apply; a "not used" answer hides them, keeps the saved
  * answers in the project, and removes the component from infrastructure.yml and environment exports.
- * Platform capability comes from Microsoft Learn and vendor documentation. Questions are vendor neutral: who supplies a
- * component and which platform it runs are separate answers, and the platform lists live in vendorPlatforms.ts.
- * Schema 33 replaced the single-vendor firewall, ToR and OOB answers with these questions.
+ * Platform capability comes from Microsoft Learn and vendor documentation. Questions are vendor neutral: a component is
+ * in the design or not, and its platform comes from the lists in vendorPlatforms.ts. Schema 33 replaced the single-vendor
+ * firewall, ToR and OOB answers; schema 34 made the firewall and ToR gates plain used / not-used questions.
  */
 const text=(key:string,label:string,hint?:string):Field=>({key,label,type:'text',...(hint?{hint}:{})})
 const notes=(key:string,label:string):Field=>({key,label,type:'notes'})
@@ -20,29 +20,26 @@ const both=(f:Field,gate:[string,string[]],detail:[string,string[]]):Field=>({..
 const used={yes:'Used in this design',no:'Not used in this design'}
 const priorities=Object.fromEntries(Array.from({length:8},(_,i)=>[String(i),i===3?'3 (SMB Direct default)':i===7?'7 (cluster heartbeat default)':String(i)]))
 
-/** Who supplies a firewall or ToR switch. Any answer other than "none" puts the component in the design. */
-export const FIREWALL=['provider','customer'],TOR=['provider','customer'],YES=['yes'],CENTRAL_MANAGEMENT=['existing','new']
-const supplied=(component:string,none:string)=>({provider:`Yes — provider-supplied ${component}`,customer:`Yes — customer-owned ${component}`,none})
+export const YES=['yes'],FIREWALL=YES,TOR=YES,CENTRAL_MANAGEMENT=['existing','new']
 
 /** Gate questions, in the order they are asked. */
 export const decisionGates={
-  firewallProvider:{component:'firewall',section:'network'},siteToSiteVpn:{component:'site_to_site_vpn',section:'network'},pointToSiteVpn:{component:'point_to_site_vpn',section:'network'},expressRoute:{component:'expressroute',section:'network'},
-  torProvider:{component:'tor_switches',section:'network'},oobSwitch:{component:'out_of_band_management',section:'network'},consoleServer:{component:'console_server',section:'network'},
+  firewallInScope:{component:'firewall',section:'network'},siteToSiteVpn:{component:'site_to_site_vpn',section:'network'},pointToSiteVpn:{component:'point_to_site_vpn',section:'network'},expressRoute:{component:'expressroute',section:'network'},
+  torInScope:{component:'tor_switches',section:'network'},oobSwitch:{component:'out_of_band_management',section:'network'},consoleServer:{component:'console_server',section:'network'},
   backupInScope:{component:'backup',section:'operations'},monitoringInScope:{component:'monitoring',section:'operations'},
 } as const
 export type DecisionGate=keyof typeof decisionGates
 
 export const networkDecisionFields:Field[]=[
-  required(choice('firewallProvider','Firewall in this design',supplied('firewall','No firewall in this design'))),
-  on(required(choice('firewallPlatform','Firewall platform',platformOptions(firewallPlatforms))),'firewallProvider',...FIREWALL),
-  both(required(text('firewallVendor','Firewall vendor')),['firewallProvider',FIREWALL],['firewallPlatform',['other']]),
-  on(required(text('firewallOwner','Firewall owner and support contact')),'firewallProvider',...FIREWALL),
-  on(text('fwModel','Firewall model'),'firewallProvider',...FIREWALL),
-  on(choice('fwHaMode','Firewall high-availability mode',{'active-passive':'Active-passive HA pair','active-active':'Active-active HA pair',standalone:'Standalone unit (no HA)'}),'firewallProvider',...FIREWALL),
-  on(text('fwFirmware','Firewall OS version'),'firewallProvider',...FIREWALL),
-  on(notes('fwWanIps','Firewall WAN / public IP addresses and ISP handoff'),'firewallProvider',...FIREWALL),
-  on(notes('fwVirtualContexts','Virtual firewall instances and their purpose'),'firewallProvider',...FIREWALL),
-  on(notes('fwGatewayIps','Gateway IP addresses on the firewall'),'firewallProvider',...FIREWALL),
+  required(choice('firewallInScope','Firewall in this design',used)),
+  on(required(choice('firewallPlatform','Firewall platform',platformOptions(firewallPlatforms))),'firewallInScope',...FIREWALL),
+  both(required(text('firewallVendor','Firewall vendor')),['firewallInScope',FIREWALL],['firewallPlatform',['other']]),
+  on(text('fwModel','Firewall model'),'firewallInScope',...FIREWALL),
+  on(choice('fwHaMode','Firewall high-availability mode',{'active-passive':'Active-passive HA pair','active-active':'Active-active HA pair',standalone:'Standalone unit (no HA)'}),'firewallInScope',...FIREWALL),
+  on(text('fwFirmware','Firewall OS version'),'firewallInScope',...FIREWALL),
+  on(notes('fwWanIps','Firewall WAN / public IP addresses and ISP handoff'),'firewallInScope',...FIREWALL),
+  on(notes('fwVirtualContexts','Virtual firewall instances and their purpose'),'firewallInScope',...FIREWALL),
+  on(notes('fwGatewayIps','Gateway IP addresses on the firewall'),'firewallInScope',...FIREWALL),
 
   required(choice('siteToSiteVpn','Azure site-to-site VPN',used)),
   on(text('vpnOnPremPublicIp','On-premises VPN public IP address or FQDN'),'siteToSiteVpn',...YES),
@@ -84,24 +81,23 @@ export const networkDecisionFields:Field[]=[
   on(num('erPeerAsn','Private peering customer ASN',0,4294967295),'expressRoute',...YES),
   on(text('erMd5Ref','Private peering MD5 key reference'),'expressRoute',...YES),
 
-  required(choice('torProvider','Top-of-rack switches',supplied('switches','No top-of-rack switches in scope'))),
-  on(required(choice('torPlatform','ToR switch platform',platformOptions(switchPlatforms))),'torProvider',...TOR),
-  both(required(text('torVendor','ToR switch vendor')),['torProvider',TOR],['torPlatform',['other']]),
-  on(text('torOwner','ToR switch owner and support contact'),'torProvider',...TOR),
-  on(text('torModel','ToR switch model'),'torProvider',...TOR),
-  on(text('torOsVersion','ToR switch OS version'),'torProvider',...TOR),
-  on(choice('torPairMode','ToR pairing',{mlag:'Multi-chassis pair (VLT, vPC, MLAG or VSX)',single:'Single switch'}),'torProvider',...TOR),
-  both(text('torPairDomain','Switch pair domain ID'),['torProvider',TOR],['torPairMode',['mlag']]),
-  both(text('torPeerLinkPorts','Peer-link ports'),['torProvider',TOR],['torPairMode',['mlag']]),
-  on(notes('torUplinks','ToR uplinks to core or firewall'),'torProvider',...TOR),
-  on(num('torMtu','ToR port MTU',0,9216),'torProvider',...TOR),
+  required(choice('torInScope','Top-of-rack switches in this design',used)),
+  on(required(choice('torPlatform','ToR switch platform',platformOptions(switchPlatforms))),'torInScope',...TOR),
+  both(required(text('torVendor','ToR switch vendor')),['torInScope',TOR],['torPlatform',['other']]),
+  on(text('torModel','ToR switch model'),'torInScope',...TOR),
+  on(text('torOsVersion','ToR switch OS version'),'torInScope',...TOR),
+  on(choice('torPairMode','ToR pairing',{mlag:'Multi-chassis pair (VLT, vPC, MLAG or VSX)',single:'Single switch'}),'torInScope',...TOR),
+  both(text('torPairDomain','Switch pair domain ID'),['torInScope',TOR],['torPairMode',['mlag']]),
+  both(text('torPeerLinkPorts','Peer-link ports'),['torInScope',TOR],['torPairMode',['mlag']]),
+  on(notes('torUplinks','ToR uplinks to core or firewall'),'torInScope',...TOR),
+  on(num('torMtu','ToR port MTU',0,9216),'torInScope',...TOR),
   // Shown only when an S2D storage system is switched (see switchedStorageKeys).
-  on(text('torStorageVlans','Storage / SMB VLANs on the ToR switches'),'torProvider',...TOR),
-  on(choice('torRdma','Storage RDMA type',{roce:'RoCEv2',iwarp:'iWARP',none:'RDMA disabled'}),'torProvider',...TOR),
-  on(choice('torSmbPriority','PFC priority for SMB Direct',priorities),'torProvider',...TOR),
-  on(choice('torClusterPriority','Priority for cluster heartbeat',priorities),'torProvider',...TOR),
-  on(num('torEtsSmbPercent','ETS bandwidth for SMB Direct (%)',0,100),'torProvider',...TOR),
-  on(num('torEtsClusterPercent','ETS bandwidth for cluster heartbeat (%)',0,100),'torProvider',...TOR),
+  on(text('torStorageVlans','Storage / SMB VLANs on the ToR switches'),'torInScope',...TOR),
+  on(choice('torRdma','Storage RDMA type',{roce:'RoCEv2',iwarp:'iWARP',none:'RDMA disabled'}),'torInScope',...TOR),
+  on(choice('torSmbPriority','PFC priority for SMB Direct',priorities),'torInScope',...TOR),
+  on(choice('torClusterPriority','Priority for cluster heartbeat',priorities),'torInScope',...TOR),
+  on(num('torEtsSmbPercent','ETS bandwidth for SMB Direct (%)',0,100),'torInScope',...TOR),
+  on(num('torEtsClusterPercent','ETS bandwidth for cluster heartbeat (%)',0,100),'torInScope',...TOR),
 
   // Out-of-band access is two independent components: a management switch for BMC and device management ports, and a
   // console server for serial consoles. A design can use either, both or neither.
@@ -132,7 +128,7 @@ export const operationsDecisionFields:Field[]=[
   on(ref('backupNetwork','Dedicated backup network','networks'),'backupInScope',...YES),
   on(text('backupServiceOwner','Backup service owner'),'backupInScope',...YES),
   required(choice('monitoringInScope','Monitoring in this design',used)),
-  on(choice('monitoringPlatform','Monitoring platform',{scom:'System Center Operations Manager','azure-monitor':'Azure Monitor','provider-noc':'Provider NOC tooling',customer:'Customer monitoring tool',other:'Other'}),'monitoringInScope',...YES),
+  on(choice('monitoringPlatform','Monitoring platform',{scom:'System Center Operations Manager','azure-monitor':'Azure Monitor',other:'Other monitoring tool'}),'monitoringInScope',...YES),
   both(text('monitoringWorkspace','Log Analytics workspace'),['monitoringInScope',YES],['monitoringPlatform',['azure-monitor']]),
   on(text('monitoringServiceOwner','Monitoring service owner'),'monitoringInScope',...YES),
   on(text('networkDeviceLogging','Syslog / SNMP destination for network devices'),'monitoringInScope',...YES),

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.37.0 — plain firewall and switch questions
+
+- Project schema 34. "Firewall in this design" and "Top-of-rack switches in this design" are used / not-used questions, like every other component. The provider-supplied versus customer-owned choice is gone.
+- Removed the firewall and ToR owner and support contact fields; they are not design data. infrastructure.yml no longer writes device_owner, device_ownership or a firewall ownership value.
+- Removed the provider and customer monitoring tool options.
+- Schema 34 turns any earlier provider or customer answer into used and drops the owner answers. Schema 32 projects migrate straight to the new questions.
+
 ## 0.36.0 — vendor-neutral network, out-of-band and server hardware design
 
 - Project schema 33. Firewall and top-of-rack questions separate who supplies the component (provider or customer) from its platform. Firewalls cover Fortinet, Palo Alto Networks, Cisco, Check Point, Sophos, Juniper or a named vendor; switches cover Dell OS10 and SONiC, Cisco NX-OS and IOS XE, HPE Aruba CX, Juniper, Arista, NVIDIA Cumulus or a named vendor. Firewall units, interfaces and gateways now apply to customer firewalls too.

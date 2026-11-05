@@ -13,11 +13,11 @@ const add=(p:Project,key:string,values:Answers)=>{const row=newRecord(collection
 function fullDesign(){
   const p=demoProject(1),host=p.design.hosts[0],cluster=p.design.clusters[0]
   Object.assign(p.decisions,{
-    firewallProvider:'provider',firewallPlatform:'fortinet',firewallOwner:'Example provider support',fwModel:'FortiGate-90G',fwHaMode:'active-passive',fwFirmware:'7.4.4',fwVirtualContexts:'root; customer',
+    firewallInScope:'yes',firewallPlatform:'fortinet',fwModel:'FortiGate-90G',fwHaMode:'active-passive',fwFirmware:'7.4.4',fwVirtualContexts:'root; customer',
     siteToSiteVpn:'yes',vpnOnPremPublicIp:'203.0.113.10',vpnGatewaySku:'VpnGw2AZ',vpnActiveActive:'yes',vpnGatewaySubnet:'10.10.0.0/27',vpnIpsecPolicy:'custom',vpnCustomPolicy:'EXAMPLE policy',vpnSharedKeyRef:'keyvault://example/psk',vpnBgp:'yes',vpnOnPremAsn:65010,vpnAzureAsn:65515,vpnOnPremBgpPeerIp:'169.254.21.1',
     pointToSiteVpn:'yes',p2sAddressPool:'172.16.200.0/24',p2sTunnelType:'openvpn',p2sAuthentication:'entra',p2sEntraTenant:'https://login.example.test/tenant',
     expressRoute:'yes',erProvider:'Example carrier',erCircuitName:'er-example',erPeeringLocation:'Example metro',erBandwidthMbps:1000,erSku:'standard',erPrimarySubnet:'192.168.100.0/30',erSecondarySubnet:'192.168.100.4/30',erVlanId:200,erPeerAsn:65020,
-    torProvider:'provider',torPlatform:'dell-os10',torModel:'S5248F-ON',torOsVersion:'10.5.6',torPairMode:'mlag',torPairDomain:'1',torPeerLinkPorts:'ethernet1/1/49-1/1/52',torMtu:9216,torStorageVlans:'711,712',torRdma:'roce',torSmbPriority:'3',torClusterPriority:'7',torEtsSmbPercent:50,torEtsClusterPercent:1,
+    torInScope:'yes',torPlatform:'dell-os10',torModel:'S5248F-ON',torOsVersion:'10.5.6',torPairMode:'mlag',torPairDomain:'1',torPeerLinkPorts:'ethernet1/1/49-1/1/52',torMtu:9216,torStorageVlans:'711,712',torRdma:'roce',torSmbPriority:'3',torClusterPriority:'7',torEtsSmbPercent:50,torEtsClusterPercent:1,
     oobSwitch:'yes',oobSwitchPlatform:'cisco-iosxe',oobSwitchOsVersion:'17.9',oobVlan:2064,
     consoleServer:'yes',consoleServerPlatform:'opengear',consoleManagement:'existing',consoleManagementProduct:'Opengear Lighthouse',consoleManagementAddress:'lighthouse.example.test',consoleEnrollmentRef:'keyvault://example/lh-token',
     backupInScope:'yes',backupProductName:'Example backup 1.0',backupLevel:'host',monitoringInScope:'no',
@@ -40,19 +40,20 @@ describe('master infrastructure.yml',()=>{
   it('uses the Azure Local Toolkit master shape with a decisions section and linked port maps',()=>{
     const p=fullDesign(),text=environmentFiles(p)['infrastructure.yml'],infra=load(text) as any
     expect(Object.keys(infra)).toEqual(['_metadata','decisions','networking','compute','operations'])
-    expect(infra._metadata).toMatchObject({schema_version:'4.0.0',generator:'hyperv-configurator',project_schema_version:33,deployment_state:'not_executed_by_configurator'})
+    expect(infra._metadata).toMatchObject({schema_version:'4.0.0',generator:'hyperv-configurator',project_schema_version:34,deployment_state:'not_executed_by_configurator'})
     expect(Object.keys(infra.decisions)).toEqual(['management_plane','firewall','site_to_site_vpn','point_to_site_vpn','expressroute','tor_switches','out_of_band_management','console_server','storage','sdn','cluster_witness','backup','monitoring'])
-    expect(infra.decisions.firewall).toEqual({answer:'provider',used:true})
+    expect(infra.decisions.firewall).toEqual({answer:'yes',used:true})
     expect(infra.decisions.monitoring).toEqual({answer:'no',used:false})
     const devices=infra.networking.onprem.network_devices
     for(const device of devices)for(const key of ['device_type','device_role','device_hostname','device_management_ip'])expect(device,device.device_hostname).toHaveProperty(key)
     expect(devices.map((d:any)=>[d.device_type,d.device_function,d.device_vendor,d.device_hostname])).toEqual([['firewall','perimeter_firewall','Fortinet','example-fw-a'],['firewall','perimeter_firewall','Fortinet','example-fw-b'],['switch','top_of_rack','Dell','example-tor-a'],['switch','out_of_band','Cisco','example-oob-1'],['console_server','console_access','Opengear','example-og-1']])
-    expect(devices[0]).toMatchObject({device_platform:'fortinet',device_ownership:'provider',device_os:'FortiOS',device_owner:'Example provider support',device_model:'FortiGate-90G',device_virtual_contexts:'root; customer',device_ha_enabled:true,device_ha_mode:'active-passive',device_ha_priority:200,device_gateway_ips:['192.0.2.1'],device_port_config:[{port:'port3',tor_switch:'example-tor-a',tor_port:'ethernet1/1/54'}],device_dhcp_scopes:[{dhcp:'server',scope_start:'192.0.2.100',virtual_context:'customer'}]})
+    expect(devices[0]).toMatchObject({device_platform:'fortinet',device_os:'FortiOS',device_model:'FortiGate-90G',device_virtual_contexts:'root; customer',device_ha_enabled:true,device_ha_mode:'active-passive',device_ha_priority:200,device_gateway_ips:['192.0.2.1'],device_port_config:[{port:'port3',tor_switch:'example-tor-a',tor_port:'ethernet1/1/54'}],device_dhcp_scopes:[{dhcp:'server',scope_start:'192.0.2.100',virtual_context:'customer'}]})
     expect(devices[2]).toMatchObject({device_platform:'dell-os10',device_os:'SmartFabric OS10',device_pairing:'mlag',device_ha_mode:'active-active',device_pair_domain:'1',device_mtu:9216,device_dcb:{storage_vlans:'711,712',rdma_type:'roce',pfc_priority_smb:3,priority_cluster_heartbeat:7,ets_percent_smb:50,ets_percent_cluster_heartbeat:1},
       device_port_config:[{port:'ethernet1/1/5',connected_adapter:'nic-a',mac:'00:11:22:33:44:55'},{port:'ethernet1/1/54',connected_firewall:'example-fw-a',connected_firewall_port:'port3'}]})
     expect(devices[3]).toMatchObject({device_os:'IOS XE',device_firmware_version:'17.9',device_model:'C9200L-48T',device_management_vlan:2064,device_port_config:[{port:'port-7',bmc_address:'192.0.2.64'}]})
     expect(devices[4]).toMatchObject({device_serial_ports:8,device_management_vlan:2064,device_cellular_failover:{mode:'cellular',apn:'example.apn'},device_central_management:{product:'Opengear Lighthouse',instance:'existing',address:'lighthouse.example.test',enrollment_token_ref:'keyvault://example/lh-token'},device_console_ports:[{port_number:1,target_type:'tor',target:'example-tor-a',baud_rate:'115200'}]})
-    expect(infra.networking.onprem.firewall).toEqual({ownership:'provider',platform:'fortinet',vendor:'Fortinet',os:'FortiOS',os_version:'7.4.4',model:'FortiGate-90G',owner:'Example provider support'})
+    expect(infra.networking.onprem.firewall).toEqual({platform:'fortinet',vendor:'Fortinet',os:'FortiOS',os_version:'7.4.4',model:'FortiGate-90G'})
+    expect(JSON.stringify(infra.networking)).not.toMatch(/owner/)
     expect(infra.networking.onprem.vlans).toMatchObject({example_management:{vlan_id:100,cidr:'192.0.2.0/24'},vlan_oob_id:2064})
     const gateway=infra.networking.hybrid.vpn.vpn_gateways[0]
     expect(gateway).toMatchObject({gateway_sku:'VpnGw2AZ',active_active:true,site_to_site:{custom_policy:'EXAMPLE policy',shared_key_ref:'keyvault://example/psk',bgp:{enabled:true,on_prem_asn:65010,azure_asn:65515}},point_to_site:{client_address_pool:'172.16.200.0/24',authentication:'entra',entra_tenant:'https://login.example.test/tenant'}})
@@ -69,7 +70,7 @@ describe('master infrastructure.yml',()=>{
   it('writes the vendor and OS of every listed platform and the typed vendor for other',()=>{
     const p=fullDesign()
     const device=(fn:string)=>(masterInfrastructure(p) as any).networking.onprem.network_devices.find((d:any)=>d.device_function===fn)
-    for(const [list,gate,key,vendorKey,fn] of [[firewallPlatforms,'firewallProvider','firewallPlatform','firewallVendor','perimeter_firewall'],[switchPlatforms,'torProvider','torPlatform','torVendor','top_of_rack'],[switchPlatforms,'oobSwitch','oobSwitchPlatform','oobSwitchVendor','out_of_band'],[consoleServerPlatforms,'consoleServer','consoleServerPlatform','consoleServerVendor','console_access']] as const){
+    for(const [list,gate,key,vendorKey,fn] of [[firewallPlatforms,'firewallInScope','firewallPlatform','firewallVendor','perimeter_firewall'],[switchPlatforms,'torInScope','torPlatform','torVendor','top_of_rack'],[switchPlatforms,'oobSwitch','oobSwitchPlatform','oobSwitchVendor','out_of_band'],[consoleServerPlatforms,'consoleServer','consoleServerPlatform','consoleServerVendor','console_access']] as const){
       expect(p.decisions[gate],gate).not.toBe('')
       for(const [platform,info] of Object.entries(list)){
         p.decisions[key]=platform;p.decisions[vendorKey]=platform==='other'?'Example vendor':''
@@ -87,14 +88,14 @@ describe('master infrastructure.yml',()=>{
 
   it('leaves every inactive component and hidden follow-up out while keeping the decision record',()=>{
     const p=fullDesign()
-    Object.assign(p.decisions,{firewallProvider:'customer',firewallPlatform:'palo-alto',firewallOwner:'Example owner',fwModel:'PA-440',fwFirmware:'11.1',siteToSiteVpn:'no',pointToSiteVpn:'no',expressRoute:'no',torProvider:'none',consoleServer:'no',backupInScope:'no'})
+    Object.assign(p.decisions,{firewallPlatform:'palo-alto',fwModel:'PA-440',fwFirmware:'11.1',siteToSiteVpn:'no',pointToSiteVpn:'no',expressRoute:'no',torInScope:'no',consoleServer:'no',backupInScope:'no'})
     const infra=masterInfrastructure(p) as any,text=JSON.stringify(infra)
-    expect(infra.networking.onprem.firewall).toEqual({ownership:'customer',platform:'palo-alto',vendor:'Palo Alto Networks',os:'PAN-OS',os_version:'11.1',model:'PA-440',owner:'Example owner'})
+    expect(infra.networking.onprem.firewall).toEqual({platform:'palo-alto',vendor:'Palo Alto Networks',os:'PAN-OS',os_version:'11.1',model:'PA-440'})
     expect(infra.networking.onprem.network_devices.map((d:any)=>[d.device_type,d.device_vendor,d.device_hostname])).toEqual([['firewall','Palo Alto Networks','example-fw-a'],['firewall','Palo Alto Networks','example-fw-b'],['switch','Cisco','example-oob-1']])
     expect(infra.networking.onprem.network_devices[0].device_port_config).toEqual([{port:'port3',purpose:'tor-uplink'}])
     expect(infra.networking).not.toHaveProperty('hybrid');expect(infra.networking).not.toHaveProperty('express_route');expect(infra).not.toHaveProperty('operations')
     for(const hidden of ['FortiGate-90G','example-tor-a','S5248F-ON','VpnGw2AZ','Example carrier','lighthouse.example.test','example-og-1','Example backup'])expect(text).not.toContain(hidden)
-    expect(infra.decisions.tor_switches).toEqual({answer:'none',used:false})
+    expect(infra.decisions.tor_switches).toEqual({answer:'no',used:false})
     expect(infra.decisions.console_server).toEqual({answer:'no',used:false})
     expect(infra.compute.cluster_nodes[0].node_bmc_oob).toEqual({device:'example-oob-1',port:'port-7'})
     p.decisions.oobSwitch='no'
@@ -105,13 +106,13 @@ describe('master infrastructure.yml',()=>{
 
   it('exports a decision key missing from the project as unanswered instead of throwing',()=>{
     const p=fullDesign()
-    delete p.decisions.firewallProvider;delete p.decisions.monitoringInScope
+    delete p.decisions.firewallInScope;delete p.decisions.monitoringInScope
     expect(()=>masterInfrastructure(p)).not.toThrow()
     const infra=masterInfrastructure(p) as any
     expect(infra.decisions.firewall).toEqual({answer:null,used:false})
     expect(infra.decisions.monitoring).toEqual({answer:null,used:false})
     expect(infra.networking.onprem.network_devices.some((d:any)=>d.device_type==='firewall')).toBe(false)
-    expect(decisionFindings(p).filter(f=>f.code==='COMPONENT_DECISION').map(f=>f.fieldKey)).toEqual(expect.arrayContaining(['firewallProvider','monitoringInScope']))
+    expect(decisionFindings(p).filter(f=>f.code==='COMPONENT_DECISION').map(f=>f.fieldKey)).toEqual(expect.arrayContaining(['firewallInScope','monitoringInScope']))
     // The strict project parser used by package exports rejects a missing key, so dump the file writer directly.
     const yaml=load(infrastructureYaml(p)) as any
     expect(yaml.decisions.firewall).toEqual({answer:null,used:false})
@@ -140,7 +141,7 @@ describe('master infrastructure.yml',()=>{
     const p=fullDesign()
     for(const name of ['example-fw-a','example-tor-a','example-oob-1','example-og-1'])expect(billOfMaterialsCsv(p)).toContain(name)
     expect(billOfMaterialsCsv(p)).toContain('Fortinet FortiGate-90G')
-    Object.assign(p.decisions,{firewallProvider:'none',torProvider:'none',consoleServer:'no'})
+    Object.assign(p.decisions,{firewallInScope:'no',torInScope:'no',consoleServer:'no'})
     const csv=billOfMaterialsCsv(p)
     for(const name of ['example-fw-a','example-tor-a','example-og-1'])expect(csv).not.toContain(name)
     expect(csv).toContain('example-oob-1')

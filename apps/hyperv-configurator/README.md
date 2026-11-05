@@ -1,8 +1,8 @@
 # Hyper-V Configurator
 
-Version: 0.36.0
+Version: 0.37.0
 
-Vendor-neutral design (schema 33): firewall, top-of-rack, out-of-band switch, console server, server hardware and hardware management answers separate who supplies a component from which vendor platform it runs. Every platform list lives in `src/vendorPlatforms.ts`, and `infrastructure.yml` takes each device's vendor and OS from that answer.
+Vendor-neutral design (schemas 33–34): every firewall, top-of-rack, out-of-band switch, console server, server hardware and hardware management question asks whether the component is in the design and which vendor platform it runs. Every platform list lives in `src/vendorPlatforms.ts`, and `infrastructure.yml` takes each device's vendor and OS from that answer.
 
 Component decisions (schema 31) start every firewall, VPN, ExpressRoute, ToR, OOB switch, console server, backup and monitoring component with a used / not-used question. Not-used answers hide their follow-up questions, stay in the saved project and are left out of `infrastructure.yml`, the master design file in the Azure Local Toolkit shape.
 

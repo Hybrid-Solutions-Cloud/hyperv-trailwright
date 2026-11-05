@@ -18,8 +18,8 @@ const collection=(key:string)=>networkDeviceCollections.find(c=>c.key===key)!
 const pick=(values:Answers,fields:Field[])=>({...defaultAnswers(fields),...Object.fromEntries(fields.filter(f=>f.key in values).map(f=>[f.key,values[f.key]]))}) as Answers
 const rows=(design:Raw,key:string)=>(Array.isArray(design[key])?design[key]:[]) as Row[]
 
-/** Decision answers in the schema-33 shape. */
-export function vendorNeutralDecisions(old:Raw):Answers{
+/** Copy every answer the current decision questions still accept; anything else starts unanswered. */
+function currentDecisions(old:Raw):Answers{
   const next=defaultAnswers(decisionFields)
   for(const field of decisionFields){
     if(!(field.key in old))continue
@@ -27,16 +27,24 @@ export function vendorNeutralDecisions(old:Raw):Answers{
     if(field.options&&value!==''&&!(String(value) in field.options))continue
     next[field.key]=value
   }
+  return next
+}
+/** A firewall or ToR gate is a plain used / not-used question; who supplied the device is not design data. */
+const inScope=(value:unknown,used:string[])=>used.includes(String(value))?'yes':value==='none'?'no':''
+
+/** Decision answers in the current shape, from schema 32. */
+export function vendorNeutralDecisions(old:Raw):Answers{
+  const next=currentDecisions(old)
   const set=(key:string,value:unknown)=>{if(value!==undefined&&value!=='')next[key]=value as Answer}
 
-  // Firewall: customer firewalls keep their recorded vendor text and owner.
+  // Firewall: a customer firewall keeps its recorded vendor text.
+  if(!next.firewallInScope)next.firewallInScope=inScope(old.firewallProvider,['customer'])
   if(old.firewallProvider==='customer'&&str(old.customerFirewallVendor)&&!next.firewallPlatform){next.firewallPlatform='other';set('firewallVendor',str(old.customerFirewallVendor))}
-  set('firewallOwner',str(old.customerFirewallOwner)||undefined)
   if(!next.fwGatewayIps)set('fwGatewayIps',str(old.customerFirewallGatewayIps)||undefined)
   if(!next.fwVirtualContexts)set('fwVirtualContexts',str(old.fwVdoms)||undefined)
 
   // ToR: the Dell PowerSwitch option and the OS answer name the platform.
-  if(old.torProvider==='dell-powerswitch')next.torProvider='provider'
+  if(!next.torInScope)next.torInScope=inScope(old.torProvider,['dell-powerswitch','customer'])
   if(!next.torPlatform){
     if(old.torOs==='os10')next.torPlatform='dell-os10'
     else if(old.torOs==='sonic')next.torPlatform='dell-sonic'
@@ -70,6 +78,19 @@ export function serverPlatformFromVendor(vendor:unknown):string{
   if(/cisco/.test(v))return 'cisco'
   if(/supermicro|super micro/.test(v))return 'supermicro'
   return 'other'
+}
+
+/**
+ * Schema 33 -> 34: the firewall and ToR gates become used / not-used questions, and the owner, provider and
+ * customer answers are removed because they are not design data.
+ */
+export function migrateDesignGatesV34(raw:Raw){
+  if(!record(raw.decisions))throw new Error('Invalid schema 33 component decisions.')
+  const old=raw.decisions,next=currentDecisions(old)
+  if('firewallProvider' in old)next.firewallInScope=inScope(old.firewallProvider,['provider','customer'])
+  if('torProvider' in old)next.torInScope=inScope(old.torProvider,['provider','customer'])
+  raw.decisions=next
+  raw.schemaVersion=34
 }
 
 export function migrateVendorNeutralV33(raw:Raw){

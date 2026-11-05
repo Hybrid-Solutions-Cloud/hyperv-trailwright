@@ -26,7 +26,7 @@ test('scope navigation preserves project context and follows management-boundary
   await expect(page.getByRole('heading',{name:'Sites and clusters',exact:true})).toBeFocused()
   const savedEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Download project',exact:true}).click()
   const saved=await readFile((await(await savedEvent).path())!,'utf8')
-  expect(JSON.parse(saved)).toMatchObject({schemaVersion:33,scope:'cluster',context:{customer:'Example customer',scenarioId:'SCOPE-17',managementSource:'external'}})
+  expect(JSON.parse(saved)).toMatchObject({schemaVersion:34,scope:'cluster',context:{customer:'Example customer',scenarioId:'SCOPE-17',managementSource:'external'}})
   await page.locator('input[type=file]').first().setInputFiles({name:'reopen.json',mimeType:'application/json',buffer:Buffer.from(saved)})
   await nav.getByRole('button',{name:/Management requirements/}).click()
   await expect(page.getByLabel('Management service source *',{exact:true})).toHaveValue('external')

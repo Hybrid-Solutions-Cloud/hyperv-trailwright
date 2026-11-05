@@ -42,7 +42,7 @@ it('migrates OME answers without inventing plug-in, sizing or acceptance decisio
   const old:any=structuredClone(project);old.schemaVersion=11
   for(const f of omePlanningFields)delete old.components[0].productDetails[f.key]
   removeHostingV14(old)
-  const next=parseProject(JSON.stringify(old));expect(next.schemaVersion).toBe(33);expect(next.components[0].id).toBe(c.id);expect(next.components[0].ome).toEqual(c.ome)
+  const next=parseProject(JSON.stringify(old));expect(next.schemaVersion).toBe(34);expect(next.components[0].id).toBe(c.id);expect(next.components[0].ome).toEqual(c.ome)
   expect(next.components[0].productDetails.plugin_aiops).toBe('');expect(next.components[0].productDetails.manual_import).toBe('')
   old.components[0].productDetails.sizingProfile='small';expect(()=>parseProject(JSON.stringify(old))).toThrow('Schema 11')
   c.productDetails.plugin_aiops='maybe';expect(()=>serializeProject(project)).toThrow('Unknown')

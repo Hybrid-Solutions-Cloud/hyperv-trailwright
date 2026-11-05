@@ -118,7 +118,7 @@ test('availability and prerequisite links survive a project round trip', async (
   const downloaded = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Download project', exact: true }).click()
   const file = await downloaded, content = await readFile((await file.path())!, 'utf8'), saved = JSON.parse(content)
-  expect(saved.schemaVersion).toBe(33)
+  expect(saved.schemaVersion).toBe(34)
   expect(saved.design.dependencies[0].values.prerequisite).toBe(saved.components.find((c: { product: string }) => c.product === 'sql').id)
   expect(saved.design.availabilityMembers[0].values.group).toBe(saved.design.availabilityGroups[0].id)
   await page.locator('input[type=file]').first().setInputFiles({ name: 'availability.json', mimeType: 'application/json', buffer: Buffer.from(content) })

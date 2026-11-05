@@ -29,7 +29,7 @@ it('rejects missing identities and conflicting restores',()=>{
   const {project,c}=fixture();expect(()=>omitComponent(project,'missing')).toThrow('no longer exists');const next=omitComponent(project,c.id);next.components.push(c);expect(()=>restoreComponent(next,c.id)).toThrow('already uses')
 })
 it('migrates schema 14 without omitting anything and validates retained records as strictly as active ones',()=>{
-  const {project,c}=fixture(),old:any=structuredClone(project);old.schemaVersion=14;expect(()=>parseProject(JSON.stringify(old))).toThrow('Schema 14');delete old.omittedComponents;removeAvailabilityV17(old);const next=parseProject(JSON.stringify(old));expect(next.schemaVersion).toBe(33);expect(next.components).toEqual(project.components);expect(next.omittedComponents).toEqual([])
+  const {project,c}=fixture(),old:any=structuredClone(project);old.schemaVersion=14;expect(()=>parseProject(JSON.stringify(old))).toThrow('Schema 14');delete old.omittedComponents;removeAvailabilityV17(old);const next=parseProject(JSON.stringify(old));expect(next.schemaVersion).toBe(34);expect(next.components).toEqual(project.components);expect(next.omittedComponents).toEqual([])
   const omitted=omitComponent(project,c.id);omitted.omittedComponents[0].component.hostingDetails.providerCredentialRef='literal';expect(()=>serializeProject(omitted)).toThrow('must use keyvault://')
   omitted.omittedComponents[0].component.hostingDetails.providerCredentialRef='';omitted.components.push(c);expect(()=>serializeProject(omitted)).toThrow('unique')
   omitted.components=[];omitted.omittedComponents[0].omittedAt='2026-02-30T12:00:00Z';expect(()=>serializeProject(omitted)).toThrow('Omission time')

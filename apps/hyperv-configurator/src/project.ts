@@ -23,9 +23,9 @@ import {sdnFabricFields,sdnRecordFields,sdnCollections} from './sdnFields'
 import {sdnServiceKeys} from './sdnServiceFields'
 import {validateSdnEvidenceState,type SdnEvidenceState} from './sdnEvidenceContract'
 import {decisionFields,decisionSecretKeys,networkDeviceKeys,networkDecisionV31Fields,STORAGE_LINKS_KEY} from './componentDecisionFields'
-import {migrateVendorNeutralV33} from './vendorNeutralMigration'
+import {migrateDesignGatesV34,migrateVendorNeutralV33} from './vendorNeutralMigration'
 
-export const SCHEMA_VERSION = 33 as const
+export const SCHEMA_VERSION = 34 as const
 export const PROJECT_KIND = 'hyperv-configurator-project' as const
 export const STORAGE_KEY = 'hyperv-configurator.project.v1'
 export const MAX_PROJECT_BYTES = 2 * 1024 * 1024
@@ -484,6 +484,10 @@ export function parseProject(text: string): Project {
   if(raw.schemaVersion===32){
     // Schema 33 makes firewall, ToR, out-of-band and server hardware answers vendor neutral (see vendorNeutralMigration.ts).
     migrateVendorNeutralV33(raw)
+  }
+  if(raw.schemaVersion===33){
+    // Schema 34 makes the firewall and ToR gates used / not-used questions and drops owner and provider answers.
+    migrateDesignGatesV34(raw)
   }
   if (raw.schemaVersion !== SCHEMA_VERSION) throw new Error('Unsupported project schema. Open this file with a compatible Configurator version.')
   if (!Array.isArray(raw.components) || raw.components.length > 1000) throw new Error('Invalid management inventory or more than 1,000 components.')

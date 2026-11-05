@@ -25,7 +25,7 @@ test('desired VMM profile configuration survives review and exports without depl
   await expect(page.getByLabel('Dynamic image conversion *',{exact:true})).toHaveValue('retain')
   const downloadEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Download project',exact:true}).click()
   const saved=await readFile((await(await downloadEvent).path())!,'utf8')
-  expect(JSON.parse(saved).schemaVersion).toBe(33)
+  expect(JSON.parse(saved).schemaVersion).toBe(34)
   expect(JSON.parse(saved).design.profiles[0].values).toMatchObject({profileState:'create',profileRef:'',vhdConversion:'retain',timeZoneId:'0'})
   await page.locator('input[type=file]').first().setInputFiles({name:'reopened-profile.json',mimeType:'application/json',buffer:Buffer.from(saved)})
   await page.getByRole('button',{name:/Implementation handoff/}).click()

@@ -52,14 +52,12 @@ export const INFRASTRUCTURE_EXTENSIONS:Record<string,string>={
   '_metadata.generator':'generator name','_metadata.generator_version':'generator version','_metadata.project_id':'project ID',
   '_metadata.project_schema_version':'project schema version','_metadata.deployment_state':'always not_executed_by_configurator',
   'networking.onprem.vlans.*':'one entry per designed network: vlan_id, purpose, cidr, gateway, dns, mtu, routing_scope',
-  'networking.onprem.firewall':'firewall ownership, platform, vendor, OS and owner, also when no units are recorded',
+  'networking.onprem.firewall':'firewall platform, vendor, OS, model and gateway IPs, also when no units are recorded',
   'networking.onprem.network_devices[].device_function':'perimeter_firewall | top_of_rack | out_of_band | console_access',
   'networking.onprem.network_devices[].device_platform':'platform answer from the vendor platform list',
-  'networking.onprem.network_devices[].device_ownership':'provider or customer',
   'networking.onprem.network_devices[].device_wan_addresses':'firewall WAN addresses and ISP handoff',
   'networking.onprem.network_devices[].device_virtual_contexts':'virtual firewall instances (VDOM, vsys, context)',
   'networking.onprem.network_devices[].device_dhcp_scopes':'firewall VLAN gateways with DHCP server or relay',
-  'networking.onprem.network_devices[].device_owner':'firewall or switch owner and support contact',
   'networking.onprem.network_devices[].device_os':'device operating system from the platform answer',
   'networking.onprem.network_devices[].device_pairing':'ToR multi-chassis pair (mlag) or single',
   'networking.onprem.network_devices[].device_pair_domain':'ToR pair domain ID (VLT, vPC, MLAG or VSX)',
@@ -143,7 +141,7 @@ export function masterInfrastructure(project:Project):Record<string,Tree>{
     const gateways=rows('firewallGateways')
     for(const r of rows('firewallDevices'))devices.push({
       device_type:'firewall',device_function:'perimeter_firewall',device_role:s(r.values.role),device_hostname:s(r.values.name),device_management_ip:s(r.values.managementIp),
-      device_vendor:firewallVendor,device_platform:v('firewallPlatform'),device_ownership:v('firewallProvider'),device_owner:v('firewallOwner'),device_os:platformOs(firewallPlatforms,v('firewallPlatform')),
+      device_vendor:firewallVendor,device_platform:v('firewallPlatform'),device_os:platformOs(firewallPlatforms,v('firewallPlatform')),
       device_model:v('fwModel'),device_serial_number:s(r.values.serial),device_firmware_version:v('fwFirmware'),
       device_ha_enabled:v('fwHaMode')?v('fwHaMode')!=='standalone':undefined,device_ha_mode:v('fwHaMode')==='standalone'?'':v('fwHaMode'),device_ha_priority:Number(r.values.haPriority)||undefined,
       device_wan_ip:s(r.values.wanIp),device_wan_addresses:v('fwWanIps'),device_virtual_contexts:v('fwVirtualContexts'),device_rack_position:s(r.values.rack),device_notes:s(r.values.notes),
@@ -158,7 +156,7 @@ export function masterInfrastructure(project:Project):Record<string,Tree>{
     const dcb=switchedStorage(project)?{storage_vlans:v('torStorageVlans'),rdma_type:v('torRdma'),pfc_priority_smb:v('torSmbPriority')?Number(v('torSmbPriority')):undefined,priority_cluster_heartbeat:v('torClusterPriority')?Number(v('torClusterPriority')):undefined,ets_percent_smb:n('torEtsSmbPercent'),ets_percent_cluster_heartbeat:n('torEtsClusterPercent')}:undefined
     for(const r of rows('torSwitches'))devices.push({
       device_type:'switch',device_function:'top_of_rack',device_role:s(r.values.role),device_hostname:s(r.values.name),device_management_ip:s(r.values.managementIp),
-      device_vendor:torVendor,device_platform:v('torPlatform'),device_ownership:v('torProvider'),device_owner:v('torOwner'),device_model:v('torModel'),device_os:platformOs(switchPlatforms,v('torPlatform')),device_firmware_version:v('torOsVersion'),device_serial_number:s(r.values.serial),
+      device_vendor:torVendor,device_platform:v('torPlatform'),device_model:v('torModel'),device_os:platformOs(switchPlatforms,v('torPlatform')),device_firmware_version:v('torOsVersion'),device_serial_number:s(r.values.serial),
       device_pairing:v('torPairMode'),device_ha_enabled:v('torPairMode')?v('torPairMode')!=='single':undefined,device_ha_mode:v('torPairMode')==='mlag'?'active-active':'',
       device_pair_domain:v('torPairDomain'),device_peer_link_ports:v('torPeerLinkPorts'),device_uplinks:v('torUplinks'),device_uplink_ports:s(r.values.uplinkPorts),device_mtu:n('torMtu'),device_rack_position:s(r.values.rack),device_dcb:dcb,
       device_port_config:[
@@ -225,7 +223,7 @@ export function masterInfrastructure(project:Project):Record<string,Tree>{
     _metadata:{version:String(project.revision),schema_version:'4.0.0',last_updated:project.updatedAt.slice(0,10),environment_name:project.name,generator:'hyperv-configurator',generator_version:metadata.version,project_id:project.id,project_schema_version:project.schemaVersion,deployment_state:'not_executed_by_configurator'},
     decisions,
     networking:{
-      onprem:{vlans,network_devices:devices,firewall:firewall?{ownership:v('firewallProvider'),platform:v('firewallPlatform'),vendor:firewallVendor,os:platformOs(firewallPlatforms,v('firewallPlatform')),os_version:v('fwFirmware'),model:v('fwModel'),gateway_ips:v('fwGatewayIps'),owner:v('firewallOwner')}:undefined},
+      onprem:{vlans,network_devices:devices,firewall:firewall?{platform:v('firewallPlatform'),vendor:firewallVendor,os:platformOs(firewallPlatforms,v('firewallPlatform')),os_version:v('fwFirmware'),model:v('fwModel'),gateway_ips:v('fwGatewayIps')}:undefined},
       hybrid:{vpn:{vpn_gateways:vpnGateways}},
       express_route:er?{provider:v('erProvider'),circuit_name:v('erCircuitName'),peering_location:v('erPeeringLocation'),bandwidth_mbps:n('erBandwidthMbps'),sku:v('erSku'),private_peering:{primary_subnet:v('erPrimarySubnet'),secondary_subnet:v('erSecondarySubnet'),vlan_id:n('erVlanId'),peer_asn:n('erPeerAsn'),md5_key_ref:v('erMd5Ref')}}:undefined,
     },

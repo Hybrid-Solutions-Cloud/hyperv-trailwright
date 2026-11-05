@@ -150,7 +150,7 @@ describe('schema 7 storage migration',()=>{
     expect(()=>parseProject(JSON.stringify(legacy))).toThrow('Schema 6')
     removeStorageV7(legacy)
     const migrated=parseProject(JSON.stringify(legacy))
-    expect(migrated.schemaVersion).toBe(33);expect(migrated.id).toBe(project.id);expect(migrated.revision).toBe(project.revision)
+    expect(migrated.schemaVersion).toBe(34);expect(migrated.id).toBe(project.id);expect(migrated.revision).toBe(project.revision)
     expect(migrated.design.storagePaths).toEqual([])
     expect(migrated.design.volumes[0].values).toMatchObject({lifecycle:'',sourceIdentity:'',currentSizeGiB:0,path:project.design.volumes[0].values.path,sizeGiB:2048})
     expect(storagePlan(migrated).findings.map(f=>f.code)).toContain('VOLUME_LIFECYCLE')

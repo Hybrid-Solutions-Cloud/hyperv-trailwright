@@ -30,7 +30,7 @@ test('management ownership, Azure conflicts and preview support survive review a
   await expect(support).toContainText('Preview baseline')
   await expect(support.getByRole('link',{name:/Vendor reference/}).first()).toHaveAttribute('href',/learn.microsoft.com/)
   const savedEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Download project',exact:true}).click()
-  const saved=await readFile((await(await savedEvent).path())!,'utf8');expect(JSON.parse(saved)).toMatchObject({schemaVersion:33,managementPlan:{deploymentOwner:'oem',answers:{azureReady:'yes',productionSupport:'no'}}})
+  const saved=await readFile((await(await savedEvent).path())!,'utf8');expect(JSON.parse(saved)).toMatchObject({schemaVersion:34,managementPlan:{deploymentOwner:'oem',answers:{azureReady:'yes',productionSupport:'no'}}})
   await page.locator('input[type=file]').first().setInputFiles({name:'reopen.json',mimeType:'application/json',buffer:Buffer.from(saved)})
   await nav.getByRole('button',{name:/Management requirements/}).click();await expect(page.getByLabel('Bare-metal OS deployment owner',{exact:true})).toHaveValue('oem')
   await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true)
